@@ -1,0 +1,11 @@
+!	IAMHIS		D. TUDHOPE/ROE/Sept 1982
+!	part of IAM suite
+INPUTIMG/FRAME(R)/       !   (RA) input image
+HMIN/VALUE/0.0           !   (R) minimum bin in histogram
+HMAX/VALUE/0.0           !   (R) maximum bin in histogram
+HMIND/VALUE/             !   (R) default minimum limit of histo
+HMAXD/VALUE/             !   (R) ........max...................
+SCLSTAT/VALUE/1          !   (I) program status
+REPLY/VALUE/             !   (CH) quadrant histo plotted in
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT

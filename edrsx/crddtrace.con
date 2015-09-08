@@ -1,0 +1,72 @@
+!   Connection file for program CRDDTRACE
+!
+INPUT/FRAME(R)/		! Frame containing data to be plotted
+DEFDETS/VALUE/5/	! Defaults no. of detectors to display
+DETS/VALUE/		! List of actual detectors to display
+REDRAW/VALUE/YES/	! If true or yes, allows interactive facilities
+DEFDEV/VALUE/INFO/	! Default graphics device
+DEVICE/VALUE/		! SGS workstation identifier for graphics output
+XLIMS/VALUE/		! The limits in arcmins of the in-scan axis
+YMAX/VALUE/		! The upper limit of the flux scale
+TITLE/VALUE//		! A title for the display
+NEXT/VALUE/		! The next action for the program to perform
+CURSOR/VALUE/YES/	! If true, then commands are selected by the cursor
+PARAM/VALUE/		! The name of a parameter to be updated
+SPACING/VALUE/AVERAGE/	! Method to use for calculating trace offsets
+OFFSET/VALUE/		! Trace offset values when SPACING=FREE
+DATA/VALUE/		! Final data value selected by cursor
+PROFILE/FRAME(R)/EDRSX:PROFILES/! Normalized source profile image
+STRNTH/VALUE/		! Strength of source in Janskies
+POSN/VALUE/		! Position of source in arcmins north of centre
+SRCSIZE/VALUE/		! Source strength given by user
+SRCPOSN/VALUE/		! Source position given by user
+SRCDET/VALUE/		! Detector to look for source in, given by user
+LOGFILE/VALUE/CRDDTRACE.LIS/! Name of text file to which logged info is sent
+!
+!   Error parameters specific to CRDDTRACE
+!
+BADDET/ERROR/*** Detector not available on this display/
+BADUNITS/ERROR/*** WARNING: Units of input data are not W*(M**-2)/
+NODATA/ERROR/*** No valid data at that position/
+NODATPAR/ERROR/*** Error writing parameter DATA/
+NODEFDETS/ERROR/*** Error aquiring parameter DEFDETS/
+NONEUPD/ERROR/*** Parameters have not been updated/
+NOVAL/ERROR/*** At least one trace contains no valid data/
+NOPOSN/ERROR/*** Error writing parameter POSN/
+NOSMPSIZ/ERROR/*** Data samples are of zero size/
+NOSTRN/ERROR/*** Error writing parameter STRNTH/
+NOTRACES/ERROR/*** No traces to display/
+NOXEXT/ERROR/*** Extent of X axis is too small/
+NOYEXT/ERROR/*** Extent of Y axis is too small/
+PROFDIM/ERROR/*** Profile image has incorrect dimensions/
+PROFINV/ERROR/*** All pixels in profile image are invalid/
+PROFPIX/ERROR/*** Profile pixel size is not defined correctly/
+PROFSIZE/ERROR/*** No. of pixels in profile is even/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets....
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+BSSOVFLOW/ERROR/*** No room for any more boresight data/
+DESCFULL/ERROR/*** No room for any more descriptors/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+EQULIMS/ERROR/*** Equal limits are not allowed/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+NOACCESS/ERROR/*** File cannot be accessed/
+NOCURS/ERROR/*** Current device does not support a cursor/
+NODEVICE/ERROR/*** Device cannot be opened/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSGSNAME/ERROR/*** SGS device name table not set up/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTEXT/ERROR/*** Specified file is not a text file/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+TOOBAD/ERROR/*** Too many bad values given/
+ZEROSCA/ERROR/*** Descriptor BSCALE is zero/

@@ -1,0 +1,11 @@
+ !+
+ !   MULCON.
+ !
+ !   A C Davenhall./ROE/                           1/2/84.
+ !-
+IMAGE/FRAME(R)/     ! Input image to be contoured.
+BOXFIL/FRAME(R)/    ! File of regions to be contoured.
+REPLY/VALUE/
+THRESH/VALUE/       ! Plotting threshold.
+INCR/VALUE/         ! Increment between contours.
+TITLE/VALUE/        ! Title for plots.

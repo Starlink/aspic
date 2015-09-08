@@ -1,0 +1,6 @@
+INPUT/FRAME(R)/
+POWER/FRAME(W)/
+TITLE/VALUE/
+ERRIN/ERROR/*** Failed to obtain input dataset ***/
+ERRDYN/ERROR/*** Failed when getting workspace ***/
+ERROUT/ERROR/*** Failed to obtain an output dataset ***/

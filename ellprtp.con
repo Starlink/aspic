@@ -1,0 +1,8 @@
+ !+
+ !    ELLPRTP.
+ !
+ !    A C Davenhall./ROE/                                23/9/82.
+ !-
+ELLIPSES/FRAME(R)/    ! File of parameters to be listed.
+REPLY/VALUE/
+TITLE/VALUE/          ! Title to appear on the listing.

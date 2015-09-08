@@ -1,0 +1,33 @@
+!   Connection file for program CRDDBLUR
+!
+INPUT/FRAME(R)/		! INPUT CRDD FILE FOR BLURRING
+OUTPUT/FRAME(W)/	! OUTPUT BLURRED CRDD FILE
+BLURBAND/VALUE/         ! IRAS BAND WITH WHICH TO SMOOTH THE INPUT
+ILEVEL/VALUE/2/		! USER INFORMATION LEVEL
+LOOP/VALUE/NO/		! YES IF PROGRAM IS TO LOOP FOR SEVERAL FILES
+CONTINUE/VALUE/		! YES IF PROGRAM IS TO CONTINUE OPERATION
+!
+!   Error parameters specific to CRDDBLUR
+!
+NONEED/ERROR/*** Input PSF already matches that of requested band/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+TOOBAD/ERROR/*** Too many bad values given/

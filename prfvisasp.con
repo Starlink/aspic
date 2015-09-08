@@ -1,0 +1,16 @@
+ !+
+ !    PRFVISASP.
+ !
+ !    A C Davenhall./ROE/                                3/8/82.
+ !-
+PROFILE/FRAME(R)/       ! Input profile.
+REPLY/VALUE/
+TITLE/VALUE/            ! Title to appear on graph.
+COMMAND/VALUE/          ! PRFVISASP command.
+SKY/VALUE/              ! Sky brightness (mag./sq.arcsec).
+ALPHA/VALUE/            ! Alpha in disk exponential law.
+MUDISK/VALUE/           ! Scale brightness in exponential law
+                        ! (mag./sq.arcsec).
+ROBULG/VALUE/           ! Ro in r**1/4 law.
+MUBULG/VALUE/           ! Scale brightness in r**1/4 law
+                        ! (mag./sq.arcsec).

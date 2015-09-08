@@ -1,0 +1,16 @@
+INPUT/FRAME(R)/
+DEVICE/VALUE/
+EPOCH/VALUE/
+EPOCHS/VALUE/
+FREQ/VALUE/GLOBAL_FREQ/
+VALUE/VALUE/
+ZEPOCH/VALUE/
+XLIMITS/VALUE/
+YLIMITS/VALUE/
+INSIDE/VALUE/
+OUTPUT/FRAME(W)/
+TITLE/VALUE/
+AGAIN/VALUE/
+HELLIN/ERROR/*** Failed to obtain sensible input ***/
+HELLWRK/ERROR/*** Failed to obtain workspace ***/
+HELLOUT/ERROR/*** Failed to obtain an output dataset ***/

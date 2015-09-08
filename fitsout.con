@@ -1,0 +1,14 @@
+MTDECK/VALUE/
+FILES/VALUE/
+EDIT/VALUE/NO
+SIMPLE/VALUE/
+BITPIX/VALUE/
+INPUT/FRAME(R)/
+OPEN/ERROR/***** Unable to allocate tape unit
+REWIND/ERROR/***** Error encountered on rewind
+SKIP/ERROR/***** Error encountered on file-skip
+WRITE/ERROR/***** Error while writing tape
+MARK/ERROR/***** Error while writing file-mark
+FILESBAD/ERROR/***** Invalid file-specification
+BDFERR1/ERROR/***** Unable to connect to bulk data frame - respecify:
+BDFERR2/ERROR/***** Fatal error encountered during frame allocation

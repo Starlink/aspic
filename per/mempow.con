@@ -1,0 +1,17 @@
+INPUT/FRAME(R)/
+M/VALUE/
+TOL/VALUE/
+ITERS/VALUE/
+COFFS/FRAME(W)/COFFS/
+FREQ/VALUE/GLOBAL_FREQ/
+NUMFREQ/VALUE/
+RANGE/VALUE/
+POWER/FRAME(W)/
+TITLE/VALUE/
+ERRIN/ERROR/*** Error obtaining input dataset ***/
+ERRCOF/ERROR/*** Error obtaining AR coefficients - run ARFIT ***/
+ERRDYN/ERROR/*** Error obtaining workspace ***/
+ERRPM/ERROR/*** Error obtaining power estimate ***/
+ERRRAN/ERROR/*** Error obtaining range of frequencies ***/
+ERROUT/ERROR/*** Error obtaining output dataset ***/
+ERRWRK/EROR/*** Error obtaining workspace***/

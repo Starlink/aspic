@@ -1,0 +1,4 @@
+!	IAMPR		D. TUDHOPE/ROE/Sept 1982
+!	part of IAM suite
+PARAMS/FRAME(R)/         !   (RA) input array of image parameters
+MISREAD/ERROR/ERROR - NO PARAMS FILE ?

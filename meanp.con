@@ -1,0 +1,13 @@
+ !+
+ !    MEANP.
+ !
+ !    A C Davenhall./ROE/                             28/10/82.
+ !-
+ARRAY/FRAME(R)/        ! Required array.
+REPLY/VALUE/
+XBASE/VALUE/           ! Lower X coord. of required region.
+YBASE/VALUE/           !   "   Y   "  . "     "       "   .
+XTOP/VALUE/            ! Upper X   "  . "     "       "   .
+YTOP/VALUE/            !   "   Y   "  . "     "       "   .
+MEAN/VALUE/            ! Computed mean.
+STDERR/VALUE/          ! Computed std. error on mean.

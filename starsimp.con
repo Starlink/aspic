@@ -1,0 +1,11 @@
+ !+
+ !    STARSIM.
+ !
+ !    A C Davenhall./ROE/                              23/12/82.
+ !-
+PARAM/FRAME(R)/         ! Control parameter file.
+LUMFUN/FRAME(R)/        ! Field Luminosity function.
+GLBFUN/FRAME(R)/        ! Globular cluster luminosity function.
+FIELD/FRAME(W)/         ! Star field generated.
+CATAL/FRAME(W)/         ! Star catalogue.
+REPLY/VALUE/

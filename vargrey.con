@@ -1,0 +1,9 @@
+ !+
+ !    VARGREY.
+ !
+ !    A C Davenhall./ROE/                                    25/10/82.
+ !-
+COLTBL/FRAME(W)/    ! File to hold the colour table.
+BLACK/VALUE/        ! Back end point of the colour table.
+WHITE/VALUE/        ! white end point of the colour table.
+REPLY/VALUE/

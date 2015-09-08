@@ -1,0 +1,20 @@
+      SUBROUTINE MONITX(M,N,XC,RC,FC,GC,NCALL)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION XC(N),RC(M)
+      DIMENSION GC(N)
+      WRITE(7,52) NCALL ,FC
+      WRITE(7,53) (I,XC(I),I=1,N)
+      WRITE(7,54)
+      WRITE(7,55) (J,RC(J),J=1,M)
+      WRITE(7,50)
+      DO 1 I = 1,N
+    1 WRITE(7,51)I,GC(I)
+   50 FORMAT(1H0,'GRADIENTS',/,1H )
+   51 FORMAT(1H ,2X,' GC(' ,I2,') = ',E16.8)
+   52 FORMAT(//,2X,'ITERATION',I3,4X,'SUM OF SQUARES',E16.8,//,2X
+     *,'COEFFICIENTS')
+   53 FORMAT(/,(2X,'X(',I2,') = ',E16.8))
+   54 FORMAT(/,2X,'FUNCTION VALUES')
+   55 FORMAT(/,(2X,'F(',I3,') = ',E16.8))
+      RETURN
+      END

@@ -1,0 +1,61 @@
+!   Connection file for program RADEC
+!
+IMAGE/FRAME(R)/		! Image containing descriptors define transformation
+INPUT/FRAME(R)/		! Optional input XY list
+XYCOORDS/VALUE/		! Pixel co-ords from user
+ILEVEL/VALUE/2/		! Interaction level
+MAXENTRY/VALUE//	! Max number of entries
+OUTPUT/FRAME(W)/	! Output list
+TITLE/VALUE/		! Output title
+GETID/VALUE/NO/		! YES if user wishes to be prompted for identifiers
+INVERSE/VALUE/NO/	! NO gives XY to RA,DEC conversion. YES gives 
+			! inverse conversion (RA,DEC to XY).
+IDENT/VALUE/		! Identifier for XY list entry
+RA_HRS/VALUE/		! RA hours field
+RA_MINS/VALUE/		! RA minutes field
+RA_SECS/VALUE/		! RA seconds field
+DEC_DEG/VALUE/		! DEC degrees field
+DEC_MIN/VALUE/		! DEC minutes field
+DEC_SEC/VALUE/		! DEC seconds field
+!
+!   Error parameters specific to RADEC
+!
+NOCOMB/ERROR/*** Image was produced by COMBINE but has non-zero CROTA1/
+NOLIST/ERROR/*** Output list has no entries/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets....
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+BSSOVFLOW/ERROR/*** No room for any more boresight data/
+DESCFULL/ERROR/*** No room for any more descriptors/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+EQULIMS/ERROR/*** Equal limits are not allowed/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NOCURS/ERROR/*** Current device does not support a cursor/
+NODEVICE/ERROR/*** Device cannot be opened/
+NONEVAL/ERROR/*** Output would have no valid pixels/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSGSNAME/ERROR/*** SGS device name table not set up/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTEXT/ERROR/*** Specified file is not a text file/
+NOTIMAGE/ERROR/*** Not an image/
+NOTXYLST/ERROR/*** Not a valid xy list/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOT3DIM/ERROR/*** Not a 3 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+PIXNOSIZ/ERROR/*** Pixels have zero area/
+TOOBAD/ERROR/*** Too many bad values given/
+ZEROFILT/ERROR/*** WARNING: The PSF image has zero total data sum/
+ZEROSCA/ERROR/*** Descriptor BSCALE is zero/

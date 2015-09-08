@@ -1,0 +1,10 @@
+ !+
+ !   FITELLP.
+ !
+ !   A C Davenhall./ROE/                               23/9/82.
+ !-
+CONTOURS/FRAME(R)/   ! File of contours to be fitted.
+LOGI/FRAME(R)/       ! File holding Log I value for each contour.
+ELLIPSES/FRAME(W)/   ! File holding parameters determined for each
+                     ! contour.
+REPLY/VALUE/

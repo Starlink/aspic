@@ -1,0 +1,170 @@
+!   Connection file for program MEMCRDD
+!
+AIM/VALUE/1.0/			! Target value of omega for MaxEnt procedure
+ANALIN/FRAME(R)/		! Input analysis/continuation file
+ANALOUT/FRAME(W)//		! Output analysis/continuation file
+BACKGRND/FRAME(R)//		! Background sky image to subtract
+BAND1PSF/FRAME(R)/EDRSX:IPAC1/	! PSF stack for band 1
+BAND2PSF/FRAME(R)/EDRSX:IPAC2/	! PSF stack for band 2
+BAND3PSF/FRAME(R)/EDRSX:IPAC3/	! PSF stack for band 3
+BAND4PSF/FRAME(R)/EDRSX:IPAC4/	! PSF stack for band 4
+BOXSIZE/VALUE/			! Size of final square image in arcmins
+CORFACT/VALUE/1.0/		! Factor to scale correlated noise values
+COVER/FRAME(W)//		! Output BDF for coverage image
+CRDDF1/FRAME(R)/		! Input CRDD file
+CRDDF2/FRAME(R)/		! Input CRDD file
+CRDDF3/FRAME(R)/		! Input CRDD file
+CRDDF4/FRAME(R)/		! Input CRDD file
+CRDDF5/FRAME(R)/		! Input CRDD file
+CRDDF6/FRAME(R)/		! Input CRDD file
+CRDDF7/FRAME(R)/		! Input CRDD file
+CRDDF8/FRAME(R)/		! Input CRDD file
+CRDDF9/FRAME(R)/		! Input CRDD file
+CRDDF10/FRAME(R)/		! Input CRDD file
+CRDDF11/FRAME(R)/		! Input CRDD file
+CRDDF12/FRAME(R)/		! Input CRDD file
+CRDDF13/FRAME(R)/		! Input CRDD file
+CRDDF14/FRAME(R)/		! Input CRDD file
+CRDDF15/FRAME(R)/		! Input CRDD file
+CRDDF16/FRAME(R)/		! Input CRDD file
+CRDDF17/FRAME(R)/		! Input CRDD file
+CRDDF18/FRAME(R)/		! Input CRDD file
+CRDDF19/FRAME(R)/		! Input CRDD file
+CRDDF20/FRAME(R)/		! Input CRDD file
+CRDOUT1/FRAME(W)/		! Output CRDD file
+CRDOUT2/FRAME(W)/		! Output CRDD file
+CRDOUT3/FRAME(W)/		! Output CRDD file
+CRDOUT4/FRAME(W)/		! Output CRDD file
+CRDOUT5/FRAME(W)/		! Output CRDD file
+CRDOUT6/FRAME(W)/		! Output CRDD file
+CRDOUT7/FRAME(W)/		! Output CRDD file
+CRDOUT8/FRAME(W)/		! Output CRDD file
+CRDOUT9/FRAME(W)/		! Output CRDD file
+CRDOUT10/FRAME(W)/		! Output CRDD file
+CRDOUT11/FRAME(W)/		! Output CRDD file
+CRDOUT12/FRAME(W)/		! Output CRDD file
+CRDOUT13/FRAME(W)/		! Output CRDD file
+CRDOUT14/FRAME(W)/		! Output CRDD file
+CRDOUT15/FRAME(W)/		! Output CRDD file
+CRDOUT16/FRAME(W)/		! Output CRDD file
+CRDOUT17/FRAME(W)/		! Output CRDD file
+CRDOUT18/FRAME(W)/		! Output CRDD file
+CRDOUT19/FRAME(W)/		! Output CRDD file
+CRDOUT20/FRAME(W)/		! Output CRDD file
+CROTA/VALUE//			! Clockwise angle from north to -ve Y axis
+DATATYPE/VALUE/SURVEY/		! Data type 'AO' or 'SURVEY'
+DEC_DEG/VALUE/			! Degrees field of user specified DEC
+DEC_MIN/VALUE/			! Minutes field of user specified DEC
+DEC_SEC/VALUE/			! Seconds field of user specified DEC
+DEGLIT/VALUE/0.3/               ! Deglitching strength (0-1)
+DGROUPS/VALUE//			! List of detector group numbers
+ELEMENT/VALUE/			! Element no. within internal file
+FIELD/VALUE/0/			! Noise level in background regions given by user
+FILE/VALUE/			! Internal file no. to output to disk
+FILTER/VALUE/0.5/               ! FWHM of gaussian ICF (in arcmins)
+FUNCTION/VALUE/HIRES/		! Function to be performed by MEMCRDD
+GROUP/VALUE/			! Sample group no. (used in UDIAG)
+HIRES/FRAME(W)/			! The High resolution output image
+ILEVEL/VALUE/2/			! Amount of non/VALUE/MEMSYS3 information to display
+INSCAN/VALUE//			! In scan pointing error in arcmins
+K/VALUE//			! Fractional error in solid angle values
+LEVEL/VALUE/0/			! Amount of MEMSYS3 diagnostics to display
+LOGFILE/VALUE//			! Name of text file to receive MEMSYS3 diagnostics
+LOOP/VALUE/NO/			! If YES then multiple masks are analysed
+LORES/FRAME(W)/			! Output BDF for low resolution image
+MASK/FRAME(R)/			! Image containing analysis mask
+MASKPOLY/FRAME(R)//		! XY list defining analysis mask
+METHOD/VALUE/CLASSIC/		! MEMSYS3 method
+MODEL/FRAME(R)//               	! Image to use as default model
+MODELOUT/FRAME(W)//		! New model for use in next run of MEMCRDD
+NITER/VALUE/20/			! Max. no. of MEM iterations to perform
+NOISE_OK/VALUE/                 ! An output parameter; YES if noise model has converged
+NTRIAL/VALUE/1000/		! No.of trials to do in pointing noise calcs
+OPTION/VALUE/			! Function for diagnostic routine UDIAG
+OUTPUT/FRAME(W)/		! BDF to hold output data or image
+PIXSIZE/VALUE//			! Pixel size given by user
+PSFERR/VALUE/0.1/ 		! Fractional error in PSF values
+RA_HRS/VALUE/			! Hours field of user specified RA
+RA_MINS/VALUE/			! Minutes field of user specified RA
+RA_SECS/VALUE/			! Seconds field of user specified RA
+RATE/VALUE/-0.5/		! Convergence rate limit (-ve means variable)
+SCALAR/VALUE/			! Used in UDIAG diagnostic routine
+SKYIN/FRAME(R)//		! Trial sky input (for simulation and hires)
+SPEED/VALUE/0.3/                ! Speed of noise loop convergence
+SRCRATIO/VALUE/2.0/		! Ratio of pointing to field variances to define sources
+STOP/VALUE/			! YES to abort after an interupt
+STOPFILE/VALUE//   		! Name of file which will cause MEMCRDD to stop
+STRIPE/VALUE/0.0/               ! Max. magnitude of stripe noise to add to simulated data
+TOL/VALUE/0.1/			! Tolerance required of MEMSYS3 calculations
+XSCAN/VALUE//			! Cross scan pointing error in arcmins
+UDIAG/VALUE/NO/			! If YES then UDIAG is called prior to analysis
+VARIN/FRAME(R)//			! I/P BDF holding variancees from last run
+VAROUT/FRAME(W)//		! O/P BDF to hold variances for next run
+!
+!   Error parameters specific to MEMCRDD
+!
+A2ERR1/ERROR/*** No such internal file/
+A3ERR1/ERROR/*** Error copying common data to output BDF/
+A5ERR1/ERROR/*** Allowed number of input CRDD files reached/
+A5ERR2/ERROR/*** CRDD files are from different AOs or different bands/
+A5ERR3/ERROR/*** No valid data given/
+A6ERR1/ERROR/*** Allowed number of input CRDD files reached/
+A6ERR2/ERROR/*** CRDD files are for different bands/
+A6ERR3/ERROR/*** No valid data given/
+A7ERR1/ERROR/*** PSF stack is for wrong IRAS band/
+A7ERR2/ERROR/*** PSF stack contains wrong number of PSFs/
+A8ERR1/ERROR/*** List contains too many different detector groups/
+A9ERR1/ERROR/*** Sky pixels are not square/
+B3ERR1/ERROR/*** Some AO legs are not parallel/
+B4ERR1/ERROR/*** The final image would cover zero area/
+B5ERR1/ERROR/*** Too much CRDD given to fit in the internal storage/
+B5ERR2/ERROR/*** Too much usable CRDD to fit in the internal storage/
+B5ERR3/ERROR/*** No usable CRDD samples found/
+B8ERR1/ERROR/*** Given BDF is not consistent with this runs parameters/
+B6ERR1/ERROR/*** MEMCRDD internal storage exhausted/
+C0ERR1/ERROR/*** Background data value after background subtration is non-positive/
+C0ERR2/ERROR/*** Model contains non-positive pixels after background subtraction/
+C2ERR1/ERROR/*** Stop file found. Execution terminated/
+D3ERR1/ERROR/*** Minimum data value is close to zero or negative/
+D5ERR1/ERROR/*** Stop file found. Execution terminated/
+D8ERR1/ERROR/*** Unable to read common data from BDF/
+F3ERR1/ERROR/*** Image has incorrect FITS descriptors/
+F4ERR1/ERROR/*** All data rejected due to being below background/
+F4ERR2/ERROR/*** Some data rejected due to being below background/
+F4ERR3/ERROR/*** Remaining negative data values could restrict convergence/
+G2ERR1/ERROR/*** Insufficient background data to define correlated noise/
+G2ERR2/ERROR/*** No valid estimates of correlated noise were found/
+Z2ERR1/ERROR/*** Inference calculations were truncated. Inaccuracies possible/
+Z2ERR2/ERROR/*** Inference calculation failed. Answers are inaccurate/
+Z2ERR3/ERROR/*** Cannot analyse results from a HISTORIC run of MEMCRDD/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BSSOVFLOW/ERROR/*** No room for any more boresight data/
+DESCFULL/ERROR/*** No room for any more descriptors/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FEWBORE/ERROR/*** Too few boresight samples for NAG to fit/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NODEVICE/ERROR/*** No such device available/
+NONMON/ERROR/*** UTC values are not monotonic. NAG routine failed!/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOTAO/ERROR/*** File does not contain AO CRDD data/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTEXT/ERROR/*** Specified file is not a text file/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOT3DIM/ERROR/*** Not a 3 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+TOOBAD/ERROR/*** Too many bad values given/

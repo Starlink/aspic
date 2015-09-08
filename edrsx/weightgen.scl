@@ -1,0 +1,87 @@
+!WEIGHTGEN:
+!    Produces a weighting image with which to weight the the Fourier 
+! transform of an IRAS image being destriped. Only the areas of the 
+! Fourier plane responsible for the IRAS stripes will be weighted
+! with this function, other areas will have a weight of one. The 
+! weighting values should normally be less than one and decrease from
+! zero frequency (the centre) to high frequencies (the edges).
+!	The dimensions of the image should be the same as the 
+! dimensions of the Fourier transform images. If these dimensions are 
+! NPIX and NLIN then the zero frequency pixel is at X=int((NPIX+1)/2) 
+! and Y=int((NLIN+1)/2)
+!
+! Procedure parameters: P1 - A keyword giving type of function required
+!			P2 - The name of the output image
+!			P3 - The X dimension (NPIX)
+!			P4 - The Y dimension (NLIN)
+!			P5-P9 Extra constants defining the exact form of
+!			     the function required. 
+!-----------------------------------------------------------------------
+!
+BELL=""
+!
+! Define allowable keywords (extend the list with values terminated with
+! commas inside the double quotes). Each form must have a block od code
+! to produce it headed by a label equal to "'keyword':" (see GAUSSIAN as
+! an example).
+!
+KEYLIST="GAUSSIAN,CONSTANT,"
+!
+! Get parameter values
+!
+LBL1:
+IF P1.EQS."" THEN INQUIRE/NOPUN P1 "''BELL'Weighting function form:="
+IF KEYLIST-(P1+",").NES.KEYLIST THEN GOTO LBL2
+WRITE SYS$OUTPUT "*** NO SUCH FORM DEFINED"
+WRITE SYS$OUTPUT "    VALID FORMS ARE: ",KEYLIST
+P1=""
+GOTO LBL1
+LBL2:
+IF P2.EQS."" THEN INQUIRE/NOPUN P2 "Output image name:="
+IF P2.EQS."" THEN EXIT
+IF P3.EQS."" THEN INQUIRE/NOPUN P3 "No. of pixels per line:="
+IF P3.EQS."" THEN EXIT
+IF P4.EQS."" THEN INQUIRE/NOPUN P4 "No. of lines:="
+IF P4.EQS."" THEN EXIT
+!
+! Now jump to the relevant form specific section before getting the form
+! dependant parameters
+!
+GOTO 'P1'
+!-----------------------------------------------------------------------
+! FORM: GAUSSIAN
+!
+! Generate a gaussian with peak value one at the zero frequency pixel,
+! and full width at half maximum specified as parameter P5
+!
+GAUSSIAN:
+IF P5.EQS."" THEN INQUIRE/NOPUN P5 "Gaussian FWHM:="
+IF P5.EQS."" THEN EXIT
+XZERO=(P3+1)/2
+YZERO=(P4+1)/2
+LET MATHS_A=2.772588722
+LET MATHS_B='XZERO'
+LET MATHS_C='YZERO'
+LET MATHS_D='P5'
+LET MATHS_NX='P3'
+LET MATHS_NY='P4'
+LET MATHS_OUTPUT='P2'
+MATHS FORMULA=EXP(-A*((XX-B)**2+(YY-C)**2)%(D*D)) TITLE=GAUSSIAN_FWHM:'P5'
+EXIT
+!----------------------------------------------------------------------
+! FORM: CONSTANT
+!
+! Generate a constant weight image with value given by parameter P5
+!
+CONSTANT:
+IF P5.EQS."" THEN INQUIRE/NOPUN P5 "Constant value:="
+IF P5.EQS."" THEN EXIT
+LET IMGEDIT_X=
+LET IMGEDIT_Y=
+LET IMGEDIT_INPUT=
+LET IMGEDIT_BACKGRND='P5'
+LET IMGEDIT_VALUE=EX
+LET IMGEDIT_ILEVEL=1
+IMGEDIT  NPIXOUT='P3' NLINEOUT='P4' OUTPUT='P2' TITLE=CONSTANT_VALUE:'P5'
+CLEAR IMGEDIT
+EXIT

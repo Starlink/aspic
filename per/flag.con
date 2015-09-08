@@ -1,0 +1,9 @@
+INPUT/FRAME(R)/
+DEVICE/VALUE/
+EPOCHS/VALUE/
+OK/VALUE/
+OUTPUT/FRAME(W)/
+TITLE/VALUE/
+HELLIN/ERROR/*** Failed to obtain sensible input ***/
+HELLWRK/ERROR/*** Failed to obtain workspace ***/
+HELLOUT/ERROR/*** Failed to obtain an output dataset ***/

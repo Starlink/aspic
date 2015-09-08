@@ -1,0 +1,7 @@
+! DSCL PROCEDURE TO PERMIT PROGRAM PROMPTING
+!
+    if f$logical("DSCL_HELP_PROMPT").nes."" then deassign dscl_help_prompt
+    assign "TRUE" dscl_help_prompt
+    write sys$output " "
+    write sys$output "Ok, automatic prompting is now in effect."
+    write sys$output " "

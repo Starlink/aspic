@@ -1,0 +1,15 @@
+!+
+!    PRFDECASP.
+!
+!    A C Davenhall./ROE/                               4/8/82.
+!    A C Davenhall./ROE/ {Modified}                    8/7/83.
+!-
+PROFILE/FRAME(R)/      ! Input profile.
+REPLY/VALUE/
+TITLE/VALUE/           ! Title to appear on the listing.
+LAMDA/VALUE/           ! Non-linear lst.sqrs. parameter (=1.0E-3)
+SKY/VALUE/             ! Sky brightness (mag./sq.arcsec).
+BMIN/VALUE/            ! Min. radius for fit to bulge.
+BMAX/VALUE/            ! Max.   "     "   "  "    "  .
+DMIN/VALUE/            ! Min.   "     "   "  "  disk.
+DMAX/VALUE/            ! Max.   "     "   "  "   "  .

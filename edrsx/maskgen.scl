@@ -1,0 +1,294 @@
+!
+! MASKGEN: Used in IRAS destriping process.
+!
+!      Generates a mask which covers the areas of the Fourier plane
+! which contains frequencies caused by the IRAS stripes. Mask images
+! have the value 1 inside the areas caused by the stripes and 0 outside
+! those areas. Three types of mask can be generated: WEDGE, CONSTANT 
+! and CUSTOM.
+!	CONSTANT: The user indicates one end of the "spike" in the
+! Fourier plane caused by the stripes. A mask is then generated which
+! is of constant width and passes thought the centre of the Fourier
+! plane and extends to the other end of the spike.
+!	WEDGE: The user indicates one end of the spike and a mask is
+! generated which tapers to zero width at the centre of the Fourier 
+! plane and then expands again out to the other end of the spike.
+!	CUSTOM: The user uses the cursor to outline a polygon containing
+! the whole of one arm of the spike. This polygon is then reflected
+! about the centre to generate a polygon which contains the other arm
+! of the spike. These polygons are then used to generate the mask.
+!
+!      The centre pixel is always excluded to ensure that the zero 
+! frequency component is not altered. 
+!----------------------------------------------------------------------
+!
+BELL=""
+SAY="WRITE SYS$OUTPUT "
+!
+!
+! ****	Give user warning about using MASKGEN
+!
+SAY "PROCEDURE MASKGEN"
+SAY ""
+SAY "      Generates a mask which covers the areas of the Fourier plane"
+SAY " which contains frequencies caused by the IRAS stripes. Mask images"
+SAY " have the value 1 inside the areas caused by the stripes and 0 outside"
+SAY " those areas. The centre pixel is always excluded to ensure that the zero "
+SAY " frequency component is not altered. Three types of mask can be generated: "
+SAY " WEDGE, CONSTANT and CUSTOM."
+SAY "       CONSTANT: The user indicates one end of the "spike" in the"
+SAY " Fourier plane caused by the stripes. A mask is then generated which"
+SAY " is of constant width and passes thought the centre of the Fourier"
+SAY " plane and extends to the other end of the spike."
+SAY "       WEDGE: The user indicates one end of the spike and a mask is"
+SAY " generated which tapers to zero width at the centre of the Fourier "
+SAY " plane and then expands again out to the other end of the spike."
+SAY "       CUSTOM: The user uses the cursor to outline a polygon containing"
+SAY " the whole of one arm of the spike. This polygon is then reflected"
+SAY " about the centre to generate a polygon which contains the other arm"
+SAY " of the spike. These polygons are then used to generate the mask."
+SAY " "
+SAY " The user should experiment using this procedure as a starting point. "
+SAY " What this procedure does can be seen by typing the file EDRSX:MASKGEN.SCL"
+SAY " ----------------------------------------------------------------------"
+!
+! ****	If first parameter (P1) has the value "LBLx", then cancel 
+! 	parameter p1 but jump to the label LBLx after getting the 
+! 	parameter values (this enables the procedure to be entered
+! 	at any of the labels and so avoid doing the earlier part).
+!
+JUMP=0
+IF P1-"LBL".EQS.P1 THEN GOTO LBL0
+   JUMP=F$INTEGER(P1-"LBL")
+   P1=""
+LBL0:
+!
+!
+! ****	Specify legal mask types
+!
+KEYLIST="WEDGE,CONSTANT,CUSTOM,"
+!
+!
+! **** 	Get the required information from the user
+!
+IF P1.EQS."" THEN INQUIRE/NOPUN P1 "''BELL'Name of mask to be generated:="
+IF P1.EQS."" THEN EXIT
+!
+IF P2.EQS."" THEN INQUIRE/NOPUN P2 "Image to be used to define the mask:="
+IF F$SEARCH(F$PARSE(P2,".BDF")).EQS."" THEN GOTO NOINPUT
+!
+LBL1:
+IF P3.EQS."" THEN INQUIRE/NOPUN P3 "''BELL'Mask type:="
+IF P3.NES."".AND.KEYLIST-(P3+",").NES.KEYLIST THEN GOTO LBL2
+SAY BELL,BELL,"*** NO SUCH MASK TYPE DEFINED"
+SAY "    VALID TYPES ARE: ",KEYLIST
+P3=""
+GOTO LBL1
+LBL2:
+QUERY:
+SAY BELL
+ARGS="YES"
+INQUIRE/NOPUNC ANS "Are you using an ARGS? (Y/N): "
+IF ANS.EQS."N" THEN ARGS="NO"
+IF ANS.NES."N".AND.ANS.NES."Y" THEN GOTO QUERY
+!
+!
+!
+! ****	Find where the zero frequency pixel is, using the image 
+!	dimensions.
+!
+DESCRIPT ILEVEL=1 IMAGE='P2'
+XZERO=(F$TRNLNM("DESCRIPT_NAXIS1")+1)/2
+YZERO=(F$TRNLNM("DESCRIPT_NAXIS2")+1)/2
+!
+! ****	Jump forward if user wants to enter at some point other than 
+!	the start
+!
+IF JUMP.GT.2.AND.JUMP.LT.5 THEN GOTO LBL'JUMP'
+!
+!
+!
+! ****	Display the image to be used in determining the mask
+!
+SAY ""
+SAY "  >>>>>  Displaying the image ",P2
+SAY ""
+IF ARGS.EQS."YES" THEN ARESET
+PCRAN="5,95"
+IF P3.EQS."CUSTOM" THEN PCRAN="80,99.9"
+IF P3.EQS."WEDGE" THEN PCRAN="4,80"
+IF P3.EQS."CONSTANT" THEN PCRAN="50,98"
+ARGPIC INPUT='P2' PCRANGE='PCRAN' DRANGE=
+!
+!
+!
+! ****	Create an image the same size as the FFT images, containing 
+!	all ones except for the zero frequency pixel which has value
+!	zero
+!
+LBL3:
+SAY ""
+SAY "  >>>>>  Creating an image containing all ones except for the centre pixel"
+SAY "  which has the value zero"
+SAY ""
+LET IMGEDIT_NPIXOUT=DESCRIPT_NAXIS1
+LET IMGEDIT_NLINEOUT=DESCRIPT_NAXIS2
+LET IMGEDIT_BACKGRND=1
+LET IMGEDIT_AUTO=NO
+LET IMGEDIT_LOOP=NO
+LET IMGEDIT_ILEVEL=1
+IMGEDIT INPUT= X='XZERO' Y='YZERO' VALUE=0 OUTPUT=ONES TITLE=
+CLEAR IMGEDIT
+!
+!
+! ****	Now jump to the section which is specific to each type of mask
+!
+LBL4:
+GOTO 'P3'
+!
+!
+!-----------------------------------------------------------------
+!
+WEDGE:
+!
+! ****	XY lists describing WEDGE and CONSTANT width masks are created
+!	in slightly different ways. The WEDGE masks have the zero
+!	frequency pixel position added into the polygon twice in order
+!	to constrict the polygon at the centre. This is achieved by
+!	creating an XY list holding the position of the zero frequency
+!	pixel, and then adding the user supplied pixel locations onto
+!	this xy list.
+!
+! ****	Create the initial xy list for WEDGE masks
+!
+XYKEY MAXENTRY=1 XYPOSN='XZERO','YZERO' OUTPUT=XYL0 TITLE= ILEVEL=1
+!
+!
+!
+! ****	Tell user to put a cross above and below the outer extremity 
+! 	of one arm of the wedge produced by the stripes
+!
+SAY BELL,BELL
+SAY "  >>>>>  Give two image positions using the cursor: one one either"
+SAY "  side of the end of the spike caused by the IRAS stripes (either"
+SAY "  end can be given). Instructions on how to use the cursor follow 
+SAY "  shortly."
+XYCUR INPUT=XYL0 PREFIX=WEND OUTPUT=XYL1 ILEVEL=1 MINENTRY=2 MAXENTRY=2
+GOTO LBL5
+!----------------------------------------------------------------
+!
+CONSTANT:
+!
+!
+! ****  Arrive here if a CONSTANT width mask is required. In this case
+!	there is no input XY list to XYCUR
+!
+SAY BELL
+SAY "  >>>>>  Give two image positions using the cursor: one one either"
+SAY "  side of the end of the spike caused by the IRAS stripes (either"
+SAY "  end can be given). Instructions on how to use the cursor follow 
+SAY "  shortly."
+XYCUR OUTPUT=XYL1 ILEVEL=1 MINENTRY=2 MAXENTRY=2
+GOTO LBL5
+!-----------------------------------------------------------------
+!
+CUSTOM:
+!
+!
+! ****	Arrive here if CUSTOM mask type required. Allow the user to set
+!	the ARGS colour table to see the inner parts of the image
+!
+SAY BELL,BELL
+IF ARGS.EQS."NO" THEN GOTO NOARGS
+SAY "  >>>>>  Use the tracker-ball to set the ARGS colour table so that "
+SAY "         the inner regions of the spike are visible. The left hand"
+SAY "         tracker-ball button restores the original colour table and"
+SAY "         the right hand button exits the colour table program."
+LUTROT
+NOARGS:
+SAY "  >>>>>  Use cursor to define a polygon containing one arm of the"
+SAY "         spike due to the IRAS stripes. Instructions on how to use"
+SAY "         the cursor follow shortly."
+XYCUR PLOT=POLY ILEVEL=1 OUTPUT=XYL1
+GOTO LBL5
+!-----------------------------------------------------------------------
+!
+! ****	All mask schemes arrive here together
+!
+LBL5:
+!
+!
+!
+! ****	Calculate the linear transformation co-efficients which 
+! 	will reflect the xy positions about the zero frequency pixel, 
+!	and then apply the transformation to the xy positions given by
+!	the user, to get the xy positions for the other arm of 
+!	the spike.
+!
+SAY ""
+SAY "  >>>>>  Reflecting the given points about the image centre to get the"
+SAY "  other arm of the spike"
+SAY ""
+COEFFS=F$STRING(2*XZERO)+",-1,0,"+F$STRING(2*YZERO)+",0,-1"
+XYTRAN INPUT=XYL1 OUTPUT=XYL2 TRCOEFFS='COEFFS' TITLE=
+!
+!
+!
+! ****	Join the xy positions of the two ends together into one xy list 
+! 	which describes a polygon containing the whole wedge. NB this
+!	need only be done for WEDGE and CONSTANT masks.
+!
+IF P3.EQS."CUSTOM" THEN GOTO LBL6
+SAY ""
+SAY "  >>>>>  Joining the co-ords of the two ends together into one xy list"
+SAY "  describing the entire spike"
+SAY ""
+XYJOIN LISTA=XYL1 LISTB=XYL2 APREFIX=A BPREFIX=B OUTPUT=XYL3 TITLE=
+!
+!
+!
+! ****	Set all pixels invalid which lie outside the polygon
+!	describing the spike (invalid pixels are treated as
+!	zeros by the Fourier transform program).
+!
+SAY ""
+SAY "  >>>>>  All pixels outside the spike will now be set invalid. Invalid"
+SAY "  pixels are treated as zero by the Fourier tranform program."
+SAY ""
+SEGMENT AIMAGE=ONES BIMAGE= POLY1=XYL3 OUTPUT='P1' TITLE=
+!
+! Now tidy up and tell user where things are
+!
+DELETE XYL1.BDF;*, XYL2.BDF;*, XYL3.BDF;*
+IF P3.EQS."WEDGE" THEN DELETE XYL0.BDF;*
+SAY BELL,BELL,"   Mask produced. Mask is ",P1
+EXIT
+!
+!
+!
+LBL6:
+!
+! ****	Arrive here to complete the processing of CUSTOM masks.
+!	Set all pixels invalid which lie outside the TWO polygons
+!	describing the spike (invalid pixels are treated as
+!	zeros by the Fourier transform program).
+!
+SAY ""
+SAY "  >>>>>  All pixels outside the spike will now be set invalid. Invalid"
+SAY "  pixels are treated as zero by the Fourier tranform program."
+SAY ""
+SEGMENT AIMAGE=ONES BIMAGE= POLY1=XYL1 POLY2=XYL2 OUTPUT='P1' TITLE=
+!
+! Now tidy up and tell user where things are
+!
+DELETE XYL1.BDF;*, XYL2.BDF;*
+SAY BELL,BELL,"   Mask produced. Mask is ",P1
+EXIT
+!
+!
+! ****	Arrive here if the user specifies an input file which doesn't
+!	exist
+!
+NOINPUT:
+SAY BELL,BELL,"*** FILE DOES NOT EXIST: ",P2
+EXIT

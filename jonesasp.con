@@ -1,0 +1,10 @@
+ !+
+ !       JONESASP.
+ !
+ !       A C Davenhall./ROE/                         29/7/82.
+ !-
+REPLY/VALUE/
+INPIC1/FRAME(R)/       ! Input frame.
+OUTPIC1/FRAME(W)/      ! Output smoothed frame.
+THRESH1/VALUE/         ! Upper threshold for 5 pt. smoothing.
+THRESH2/VALUE/         !   "       "      "  3 " .     "    .

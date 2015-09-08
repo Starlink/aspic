@@ -1,0 +1,7 @@
+      program call_itfhis
+*
+* GENERATES AN ITF TABLE WHICH CAUSES THE HISTOGRAM OF THE
+* CORRECTED IMAGE TO MATCH THAT OF ANOTHER IMAGE
+*
+      call itfhis
+      end

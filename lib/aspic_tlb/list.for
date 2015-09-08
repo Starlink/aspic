@@ -1,0 +1,36 @@
+        SUBROUTINE LIST
+C 
+C       SUBROUTINE TO LIST A COEFFICIENT FILE
+C
+        IMPLICIT INTEGER (A-Z)
+        INCLUDE 'INTERIM(ERRPAR)'
+        INCLUDE 'INTERIM(FMTPAR)'
+        INTEGER IDIM(2)
+        CHARACTER*80 ORD
+C
+        CALL RDIMAG('IN',FMT_R,2,IDIM,ODIM,IPOINT,STATUS)
+        IF(STATUS.NE.ERR_NORMAL) THEN
+              CALL WRERR('INFAIL')
+              CALL FRDATA(' ',STATUS)
+              RETURN
+        ENDIF
+C
+        IF(ODIM.NE.2) THEN
+             CALL WRERR('NOTCOEF')
+             CALL FRDATA(' ',STATUS)
+             RETURN
+        ENDIF
+        IF(IDIM(1).NE.2.OR.IDIM(2).NE.8)THEN
+             CALL WRERR('NOTCOEF')
+             CALL FRDATA(' ',STATUS)
+             RETURN
+        ENDIF
+C
+        CALL RDDSCR('IN','ORDER',1,ORD,AVAL,STATUS)
+        READ(ORD,910) NORD
+910     FORMAT(I1)
+        CALL LISTR(%VAL(IPOINT),IDIM(1),IDIM(2),NORD)
+        CALL FRDATA(' ',STATUS)
+ 	CALL CNPAR('IN',STATUS)
+        RETURN
+        END

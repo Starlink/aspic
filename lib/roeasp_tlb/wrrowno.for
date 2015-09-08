@@ -1,0 +1,7 @@
+      SUBROUTINE WRROWNO (ROWNO)
+      INTEGER ROWNO
+      CHARACTER*60 MESSG
+1     FORMAT (' table has been * RENUMBERED * - last row is now',I4)
+      WRITE(MESSG,1) ROWNO
+      CALL WRUSER(MESSG,ISTATUS)
+      END

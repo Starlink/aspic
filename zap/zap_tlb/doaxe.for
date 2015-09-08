@@ -1,0 +1,93 @@
+       SUBROUTINE DOAXE(SIZE,XX,YY,LSTLEN,XHEAD,YHEAD)
+C
+C
+C
+      CHARACTER*72 TEXT
+      CHARACTER*30 XHEAD,YHEAD
+      REAL XX(LSTLEN),YY(LSTLEN),AX(2),AY(2),SIZE(2)
+      CHARACTER*30 TEXTC
+      CHARACTER*30 TEXTA(1),TEXTB(1)
+      INTEGER TIA,TIB
+      EQUIVALENCE (TEXTB(1),TIA)
+      EQUIVALENCE (TEXTA(1),TIB)
+C
+C  Get ranges of values
+C
+      XMIN = XX(1)
+      XMAX = XX(1)
+      YMIN = YY(1)
+      YMAX = YY(1)
+      DO L = 1,LSTLEN
+         IF(XX(L).GT.XMAX) XMAX = XX(L)
+         IF(XX(L).LT.XMIN) XMIN = XX(L)
+         IF(YY(L).GT.YMAX) YMAX = YY(L)
+         IF(YY(L).LT.YMIN) YMIN = YY(L)
+      ENDDO
+      WRITE(TEXT,920)XMIN,XMAX
+  920 FORMAT(' ','X RANGE = ',2G13.6)
+      CALL WRUSER(TEXT,ISTAT)
+      CALL WRUSER('ENTER X PLOT LIMITS',ISTAT)
+      AX(1) = XMIN - 0.05*(XMAX-XMIN)
+      AX(2) = XMAX + 0.05*(XMAX-XMIN)
+      IF (AX(1).EQ.AX(2)) THEN
+         AX(1) = AX(1) - 1.0
+         AX(2) = AX(2) + 1.0
+      ENDIF
+      CALL RDKEYR('DEVLIMX',.TRUE.,2,AX,I,ISTAT)
+      CALL CNPAR('DEVLIMX',ISTAT)
+      WRITE(TEXT,921)YMIN,YMAX
+  921 FORMAT(' ','Y RANGE = ',2G13.6)
+      CALL WRUSER(TEXT,ISTAT)
+      CALL WRUSER('ENTER Y PLOT LIMITS',ISTAT)
+      AY(1) = YMIN - 0.05*(YMAX-YMIN)
+      AY(2) = YMAX + 0.05*(YMAX-YMIN)
+      IF (AY(1).EQ.AY(2)) THEN
+         AY(1) = AY(1) - 1.0
+         AY(2) = AY(2) + 1.0
+      ENDIF
+      CALL RDKEYR('DEVLIMY',.TRUE.,2,AY,I,ISTAT)
+      CALL CNPAR('DEVLIMY',ISTAT)
+      XL = SIZE(1)
+      YL = SIZE(2)
+C
+C
+      CALL NEWPLT(AX(1),AX(2),XL,AY(1),AY(2),YL)
+      CALL WRUSER(' CAPTION FOR X AXIS IS ?',ISTAT)
+      TEXTC = XHEAD
+      CALL RDKEYC('TEXTX',.TRUE.,1,TEXTC,I,ISTAT)
+      CALL CNPAR('TEXTX',ISTAT)
+      WRITE (TEXTA(1),902)TEXTC
+  902 FORMAT(A30)
+      CALL CHARLN(TEXTC,KLENX)
+      CALL WRUSER(' CAPTION FOR Y AXIS IS ?',ISTAT)
+      TEXTC = YHEAD
+      CALL RDKEYC('TEXTY',.TRUE.,1,TEXTC,I,ISTAT)
+      CALL CNPAR('TEXTY',ISTAT)
+      WRITE (TEXTB(1),902)TEXTC
+      CALL CHARLN(TEXTC,KLENY)
+      CALL DRAW AX(TIA,KLENX,AX(1),90.0)
+      CALL DRAW AX(TIB,KLENX,AY(1),0.0)
+      CALL BREAK
+      CALL JOIN PT(AX(2),AY(1))
+      CALL JOIN PT(AX(2),AY(2))
+      CALL JOIN PT(AX(1),AY(2))
+C
+C
+C
+      END
+ 
+ 
+ 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C      **************
+C      *            *
+C      * S/R USECUR *
+C      *            *
+C      **************
+C
+C --------------------------------------------------------------
+C
+C
+C

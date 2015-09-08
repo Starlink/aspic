@@ -1,0 +1,4 @@
+INPUT/FRAME(R)/
+OUTPUT/FRAME(W)/
+ERRIN/ERROR/*** Error finding input frame ***/
+ERROUT/ERROR/*** Error obtaining output frame ***/

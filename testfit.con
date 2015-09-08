@@ -1,0 +1,14 @@
+!+
+!
+!    TESTFIT
+!
+!    D.W.T.Baines/ROE/April 1983
+!
+!-
+MODE/VALUE/          ! Number of parameters to be fitted
+IAREA/VALUE/         ! Size of the area over which fit is to be performed
+EXP/VALUE/           ! Saturation exponent initial/fixed value
+DSAT/VALUE/          ! Saturation density initial/fixed value
+INPIC1/FRAME(R)/     ! STARLINK frame containing data to be measured
+IXPOS/VALUE/         ! Approximate X-position of object to be measured
+IYPOS/VALUE/         ! Approximate Y-position of object to be measured

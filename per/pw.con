@@ -1,0 +1,7 @@
+INPUT/FRAME(R)/
+PARIN/FRAME(R)/
+OUTPUT/FRAME(W)/
+TITLE/VALUE/
+HELLIN/ERROR/*** Failed to obtain sensible input ***/
+ERRPAR/ERROR/*** Failed to obtain a parameter set ***/
+ERROUT/ERROR/*** Failed to obtain an output dataset ***/

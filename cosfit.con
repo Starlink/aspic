@@ -1,0 +1,16 @@
+!	COSFIT		D. TUDHOPE/ROE/NOV 1982
+!	part of CALIBRATION suite
+LEVELS/FRAME(R)/		! (RA) calibration levels
+LOOKUP/FRAME(W)/	        ! (RA) intensity lookup table
+TCLEAR/VALUE/			! (I) cosmos tclear
+TBLACK/VALUE/			! (I) cosmos tblack
+TABS/VALUE/			! (R) minimum observed value
+TABF/VALUE/			! (R) maximum observed value
+NTAB/VALUE/1024			! (I) length of lookup table
+TERMINAL/VALUE/			! (I) terminal type
+REPLY/VALUE/			! (CH) title
+BADLEV/ERROR/ERROR - An observed VALUE in LEVELS not in range TABS..TABF
+TOOFEW/ERROR/ERROR - COSFIT needs at least 2 levels IN LEVELS TABLE
+NONE/ERROR/ERROR - ALL points rejected !
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT

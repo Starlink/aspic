@@ -1,0 +1,25 @@
+ !+
+ !     SIMPAR.
+ !
+ !     A C Davenhall./ROE/                                 30/12/82.
+ !-
+PARAM/FRAME(W)/     ! Control parameter file.
+REPLY/VALUE/
+IXEXT/VALUE/        ! X size of image frame to be generated.
+IYEXT/VALUE/        ! Y  "   "    "     "   "  "      "    .
+PLTSCL/VALUE/       ! Plate scale (arcsec/mm).
+PIXSIZ/VALUE/       ! Pixel size (micron).
+APERTR/VALUE/       ! Telescope aperture (cm).
+EXPOSE/VALUE/       ! Exposure time (sec).
+SKYBRI/VALUE/       ! Sky brightness (mag./sq.arcsec).
+STMULT/VALUE/       ! Galactic latitude/star density factor.
+BETA/VALUE/         ! Moffat's quantity beta.
+R/VALUE/            ! Moffat's quantity R (arcsec).
+ATMABS/VALUE/       ! Total atmospheric absorption.
+EFFIC/VALUE/        ! Fraction of light lost in telescope & detector.
+THRESH/VALUE/       ! Plotting threshold (magnitudes).
+NGLOB/VALUE/        ! No. of stars in the globular cluster.
+DIST/VALUE/         ! Distance to the cluster (pc).
+GABSOR/VALUE/       ! Total interstellar absorption to the cluster.
+RCORE/VALUE/        ! King's core radius for the cluster.
+RTIDAL/VALUE/       ! King's tidal radius for the cluster.

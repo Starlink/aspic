@@ -1,0 +1,5 @@
+INPUT/FRAME(R)/
+DIMS/VALUE/
+OUTPUT/FRAME(W)/
+HELLIN/ERROR/*** Error getting input frame (not 2-d?) ***
+HELLOUT/ERROR/*** Error getting output frame ***

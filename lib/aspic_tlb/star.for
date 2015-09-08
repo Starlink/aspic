@@ -1,0 +1,51 @@
+      SUBROUTINE STAR(PIC,NX,NY,W,X0,Y0,TINT,FWHM)
+*
+*+   WRITTEN BY P T WALLACE
+*  DETERMINE BRIGHTNESS, POSITION & SIZE OF STAR
+*
+*  GIVEN:
+*     PIC         2-D ARRAY CONTAINING STAR IMAGE
+*     NX,NY       DIMENSIONS OF THE PART OF ARRAY USED
+*     W           WORK ARRAY
+*
+
+      INTEGER NX,NY
+      REAL PIC(49,49),W(49)
+
+      CHARACTER*80 LINE
+
+
+*  SAMPLE BACKGROUND
+      BG=PIC(1,1)
+
+*  COLLAPSE INTO X VERSUS Z
+      DO IX=1,NX
+         W(IX)=0.0
+      END DO
+      DO IY=1,NY
+         DO IX=1,NX
+            W(IX)=W(IX)+(PIC(IX,IY)-BG)
+         END DO
+      END DO
+
+*  PROCESS X PROFILE
+      CALL PP(W,NX,XINT,X0,XW)
+
+*  COLLAPSE INTO Y VERSUS Z
+      DO IY=1,NY
+         S=0.0
+         DO IX=1,NX
+            S=S+(PIC(IX,IY)-BG)
+         END DO
+         W(IY)=S
+      END DO
+
+*  PROCESS Y PROFILE
+      CALL PP(W,NY,YINT,Y0,YW)
+
+*  ESTIMATE INTEGRATED INTENSITY AND FWHM
+      TINT=(XINT+YINT)/2.0
+      FWHM=(XW+YW)/2.0
+
+
+      END

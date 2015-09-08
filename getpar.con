@@ -1,0 +1,9 @@
+!	GETPAR		D. TUDHOPE/ROE/Sept 1982
+!	part of IAM suite
+HMIN/VALUE/0.0           !   (R) minimum bin in histogram
+HMAX/VALUE/0.0           !   (R) maximum bin in histogram
+PAR/VALUE/               !   (R) histogram parameter returned
+SCLSTAT/VALUE/1          !   (I) program status
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT
+NOTYET/ERROR/ERROR - IAMHIS MUST BE RUN FIRST

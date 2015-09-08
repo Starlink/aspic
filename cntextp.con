@@ -1,0 +1,16 @@
+ !+
+ !   CNTEXT.
+ !
+ !   A C Davenhall./ROE/                              14/9/82.
+ !-
+IMAGE/FRAME(R)/     ! Image frame to be analysed.
+CONTOURS/FRAME(W)/  ! Frame of contours generated.
+LOGI/FRAME(W)/      ! Log I values for contours generated.
+WORK/FRAME(W)/      ! Work array.
+REPLY/VALUE/
+XBASE/VALUE/        ! Lower X coord. of region to be contoured.
+YBASE/VALUE/        !   "   Y   "  . "    "    "  "     "     .
+XTOP/VALUE/         ! Upper X   "  . "    "    "  "     "     .
+YTOP/VALUE/         !   "   Y   "  . "    "    "  "     "     .
+MINLGI/VALUE/       ! Lowest Log I to be contoured.
+DELOGI/VALUE/       ! Contour increment in Log I.

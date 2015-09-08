@@ -1,0 +1,7 @@
+!	APLOTQ		D. TUDHOPE/ROE
+!            TO PLOT AN IMAGE onto a quadrant of args scaling up or down
+INPIC1/FRAME(R)/         !   (RA) INPUT IMAGE
+TZEROD_/VALUE/           !   (R) MIN INTENSITY IN IMAGE
+TMAXD_/VALUE/            !   (R) MAX .................
+NAUTO_/VALUE/0           !   (I) AUTOSCALE FLAG - 0 IS AUTOSCALE
+REPLY/VALUE/             !   (CH) QUADRANT - A,B,C,D

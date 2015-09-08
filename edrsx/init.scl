@@ -1,0 +1,158 @@
+$!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$! Starts up the IRAS EDRS extension software package (EDRSX).
+$!
+$! To use this package, define a logical name pointing to the directory
+$! containing this procedure and the other EDRSX software, and then, 
+$! in DSCL, type GO followed by the the logical name.
+$!
+$! NB: The programs in this package run under an EDRS-like environment
+$! and so EDRS is established as the package directory to enable easy 
+$! use of EDRS programs
+$!
+$! IPMAF IRAS software is also available in the usual way. But does 
+$! not currently have the EDRS help facilities.
+$!--------------------------------------------------------------------
+$!
+$! Suppress "re-assignment" messages for the duration of this procedure
+$!
+$	DEFINE="DEFINE/NOLOG"
+$	ASSIGN="ASSIGN/NOLOG"
+$!
+$! Remember the current directory
+$!
+$	EDRSX=F$TRNLNM("DSCL_PAKDIR")
+$!
+$! See if user is an "expert". 
+$!
+$	EXPERT="FALSE"
+$	IF F$TRNLNM("EDRSX_EXPERT").EQS."TRUE" THEN EXPERT="TRUE"
+$!
+$! Set up EDRS to be the current package
+$!
+$	EDRS=F$TRNLNM("EDRS")
+$	IF EDRS.NES."" THEN DEFINE DSCL_PAKDIR 'EDRS'
+$!
+$! Start up the standard IRAS software package and correct the RAL
+$! specific IRASHELP definition contained in the standard Starlink 
+$! release
+$!
+$	IRASTART
+$	IRASHELP=="HELP/LIBRARY=IRASDIR:IRAS.HLB IRAS"
+$!
+$! Give introductory messages unless user is an expert
+$!
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "       *** EDRS extension package (EDRSX) ***    (7/4/92)"
+$	WRITE SYS$OUTPUT " "
+$	IF EXPERT.EQS."TRUE" THEN GOTO LBL1
+$	WRITE SYS$OUTPUT "   Three packages are available in addition to EDRSX:"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "	1)  The general purpose 2D image processing package, EDRS"
+$	WRITE SYS$OUTPUT "	2)  The IPMAF IRAS software (eg I_COMBINE, etc)"
+$	WRITE SYS$OUTPUT "	3)  ASPIC"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "   Programs from any of these packages may be run by just"
+$	WRITE SYS$OUTPUT "   typing their name. To obtain help on EDRSX just type HELP."
+$	WRITE SYS$OUTPUT "   To obtain help on EDRS, ASPIC, or IPMAF software,"
+$	WRITE SYS$OUTPUT "   type HELP @EDRSHELP, HELP @ASPICHELP, or HELP @IPMAFHELP"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "   Like EDRS, the EDRSX programs can access help while"
+$	WRITE SYS$OUTPUT "   executing, by replying with a ? character at any prompt."
+$	WRITE SYS$OUTPUT "   This facility is very useful if you are unfamiliar with"
+$	WRITE SYS$OUTPUT "   the programs. By default you get the prompts anyway."
+$	WRITE SYS$OUTPUT "   This can be prevented by typing NOPROMPT or by declaring"
+$	WRITE SYS$OUTPUT "   yourself as an ""expert"" user. Type HELP EDRSX for"
+$	WRITE SYS$OUTPUT "   more information."
+$	WRITE SYS$OUTPUT " "   
+$LBL1:
+$!
+$! Set up the help library search list. The default library is the 
+$! EDRSX library, followed by EDRS, ASPIC, IPMAF, and VMS.
+$! To obtain help about programs in this package type "HELP".
+$! To obtain help on EDRS type "@EDRSHELP", for ASPIC type "@ASPICHELP",
+$! for IPMAF s/w type "@IPMAFHELP" and for VMS type "@VMS" (Assigning 
+$! a logical name VMSHELP seems to cause the HELP program to crash).
+$!
+$	DEFINE HLP$LIBRARY_4 VMS
+$	DEFINE IPMAFHELP IRASDIR:IRAS.HLB
+$	DEFINE HLP$LIBRARY_3 IPMAFHELP
+$	DEFINE ASPICHELP ASPDIR:PROGLIB.HLB
+$	DEFINE HLP$LIBRARY_2 ASPICHELP
+$	DEFINE EDRSHELP 'EDRS'HELPLIB.HLB
+$	DEFINE HLP$LIBRARY_1 EDRSHELP
+$	DEFINE EDRSXHELP 'EDRSX'EDRSXHELP.HLB
+$	DEFINE HLP$LIBRARY EDRSXHELP
+$	DEFINE PAKHELP 'EDRSX'EDRSXHELP.HLB
+$!
+$! Define logical names for all the programs within this package
+$! so that they can be activated by typing the name alone.
+$!
+$	DEFINE BDFGEN 'EDRSX'BDFGEN
+$	DEFINE CONVOLVE 'EDRSX'CONVOLVE
+$	DEFINE CRDDBLUR 'EDRSX'CRDDBLUR
+$	DEFINE CRDDSAMPLE 'EDRSX'CRDDSAMPLE
+$	DEFINE CRDDTRACE 'EDRSX'CRDDTRACE
+$	DEFINE DATARANGE 'EDRSX'DATARANGE
+$	DEFINE DRAWSCAN 'EDRSX'DRAWSCAN
+$	DEFINE EDRSIN 'EDRSX'EDRSIN
+$	DEFINE FIXINVAL 'EDRSX'FIXINVAL
+$	DEFINE FOURIER 'EDRSX'FOURIER
+$	DEFINE HISTOGRAM 'EDRSX'HISTOGRAM
+$	DEFINE IMGEDIT 'EDRSX'IMGEDIT
+$	DEFINE IMGSTACK 'EDRSX'IMGSTACK
+$	DEFINE IRASBACK 'EDRSX'IRASBACK
+$	DEFINE IRASCOEF 'EDRSX'IRASCOEF
+$	DEFINE IRASCORR 'EDRSX'IRASCORR
+$	DEFINE IRASDSCR 'EDRSX'IRASDSCR
+$	DEFINE IRASIN 'EDRSX'IRASIN
+$	DEFINE IRASSHIFT 'EDRSX'IRASSHIFT
+$	DEFINE ITFHIST 'EDRSX'ITFHIST
+$	DEFINE MATCHBACK 'EDRSX'MATCHBACK
+$	DEFINE MEMCRDD 'EDRSX'MEMCRDD
+$       DEFINE NDFOUT 'EDRSX'NDFOUT
+$	DEFINE RADEC 'EDRSX'RADEC
+$	DEFINE SCATTER 'EDRSX'SCATTER
+$	DEFINE SIMCRDD 'EDRSX'SIMCRDD
+$       DEFINE SOURCEFIT 'EDRSX'SOURCEFIT
+$       DEFINE XYPLOT 'EDRSX'XYPLOT
+$!
+$! Define logical names for all the procedures within this package
+$! so that they can be activated by typing the name alone.
+$!
+$	DEFINE BLINK     'EDRSX'BLINK
+$	DEFINE DESTRIPE  'EDRSX'DESTRIPE
+$	DEFINE IRASSTACK 'EDRSX'IRASSTACK
+$	DEFINE MASKGEN   'EDRSX'MASKGEN
+$       DEFINE MEMASK    'EDRSX'MEMASK
+$	DEFINE SKYSUB	 'EDRSX'SKYSUB
+$	DEFINE WEIGHTGEN 'EDRSX'WEIGHTGEN
+$	DEFINE BIGCONV   'EDRSX'BIGCONV
+$!
+$! Define symbols for utility procedures
+$!
+$	DEVSYS:==@'EDRSX'DEVSYS
+$	ZAPTAB:==$'EDRSX'ZAPTAB
+$	BATCH:==@'EDRSX'BATCH
+$!
+$! When the user leaves EDRSX, perform the procedure EDRSXTIDY rather
+$! than the PAKTIDY procedure in DSCLDIR
+$!
+$	PAKTIDY:==@'EDRSX'EDRSXTIDY
+$!
+$! Switch on auto prompting (for sake of error messages really) unless
+$! user is an expert.
+$!
+$	IF EXPERT.EQS."FALSE" THEN DEFINE DSCL_HELP_PROMPT TRUE
+$	IF EXPERT.EQS."TRUE" THEN DEFINE DSCL_HELP_PROMPT FALSE
+$!
+$! Stop help from giving a list of additional libraries, since all that
+$! is displayed is the file names which are nor very informative (most
+$! of them are called HELPLIB !).
+$!
+$	H*ELP:==HELP/NOLIBRARY/PAGE/NOLIBLIST
+$!
+$! Use the EDRSX version of DSCLCOMM (called DSBCOMM). This version 
+$! allows programs to be pointed to by logical names as well as 
+$! procedures
+$!
+$	DSCLCOMM:==$EDRSX:DSBCOMM

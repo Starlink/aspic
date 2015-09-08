@@ -1,0 +1,9 @@
+ !+
+ !   PARPLTP
+ !
+ !   A C Davenhall./ROE/                             24/9/82.
+ !-
+ELLIPSES/FRAME(R)/  ! File of parameters for fitted ellipses.
+WORK1/FRAME(W)/     ! work array.
+WORK2/FRAME(W)/     ! work array.
+REPLY/VALUE/

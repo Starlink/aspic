@@ -1,0 +1,116 @@
+!
+!****   Check requirements for procedure to run are met
+!
+        ON CONTROL_Y THEN GOTO END
+        ON ERROR THEN GOTO END
+!
+!****   Tell user what the procedure does
+!
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "   Fits a polynomial or spline surface to the approximate"
+        WRITE SYS$OUTPUT "   lower envelope of an image to use as a sky estimate, "
+        WRITE SYS$OUTPUT "   and subtracts it from the image"
+        WRITE SYS$OUTPUT "  ---------------------------------------------------"
+        WRITE SYS$OUTPUT " "
+!
+!****   Get required parameter values from user
+!
+!       P1 = Input image
+!       P2 = Ouput image
+!       P3 = Output image title
+!       P4 = No. of iterations to perform
+!       P5 = A file containing an xy list defining sky  polygon
+!            If this is not given image display is used to get the list.
+!	P6 = No. of free parameters in fit (default=3)
+!
+        IF P1.EQS."" THEN INQUIRE P1 "FIT WHICH IMAGE?"
+        IF P1.EQS."" THEN GOTO END
+        IF P2.EQS."" THEN INQUIRE P2 "OUTPUT (SKY CORRECTED) IMAGE?"
+        IF P2.EQS."" THEN GOTO END
+        IF P3.EQS."" THEN INQUIRE P3 "OUTPUT IMAGE TITLE?"
+        IF P4.EQS."" THEN INQUIRE P4 "NO. OF ITERATIONS OF SKY AREA? (DEFAULT=3)"
+        IF P4.EQS."" THEN P4=3
+        IF P5.EQS."" THEN INQUIRE P5 "SKY POLY? (DEFAULT=USE IMAGE DISPLAY)"
+        ARGS_SKY="NO"
+        IF P5.EQS."" THEN ARGS_SKY="YES"
+ 	IF P6.EQS."" THEN INQUIRE P6 "NO. OF FREE PARAMETERS IN FIT? (DEFAULT=3) "
+        IF P6.EQS."" THEN P6=3
+!
+!****   Get a first guess at the region containing sky from the user
+!       (The 'sky-only' frame)
+!
+        IF ARGS_SKY.EQS."YES" THEN P5="SKYXY.TMP" 
+        IF ARGS_SKY.EQS."NO" THEN GOTO EXTRACT_SKY
+        ARGPIC INPUT='P1' DRANGE=
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "   USE CURSOR TO DEFINE THE VERTICES OF A POLYGON"
+        WRITE SYS$OUTPUT "   CONTAINING FIRST GUESS AT SKY AREA (I.E. EXCLUDING"
+        WRITE SYS$OUTPUT "   ANY OBVIOUS BRIGHT OBJECTS)"
+        XYCUR OUTPUT='P5' PLOT=POLY ILEVEL=1
+EXTRACT_SKY:
+        SEGMENT AIMAGE='P1' BIMAGE= POLY1='P5' OUTPUT=SKY.TMP TITLE=
+!
+!****   Set up some parameter values which don't change within the
+!       iteration block
+!
+        LET SURFIT_NXPAR='P6'
+        LET SURFIT_NYPAR='P6'
+        LET SURFIT_IX=
+        LET SURFIT_IY=
+        LET SURFIT_TITLE=
+        LET MATHS_FORMULA=MAX(IA:CLIP(-A*B:IA-IB:A*C))
+        LET MATHS_B=2
+        LET MATHS_C=0.5
+        LET MATHS_TITLE=
+!
+!****   On each iteration pixels are rejected from the sky-only frame
+!       as the lower envelope is approached
+!
+        ITERATION=0
+LOOP_1:
+        ITERATION=ITERATION+1
+        WRITE SYS$OUTPUT "    ITERATION ",ITERATION
+        IF ARGS_SKY.EQS."NO" THEN GOTO NODISP
+        ARGPIC INPUT=SKY.TMP DRANGE=
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "    SKY-ONLY FRAME NO. ",ITERATION," DISPLAYED"
+NODISP:
+!
+!****   Fit a surface to the sky-only frame by least squares
+!
+        SURFIT INPUT=SKY.TMP OUTPUT=MODELSKY.TMP
+!
+!****   Define a new sky-only frame by selecting those pixels from the
+!       input image which occur at locations where the difference
+!       between the current model sky and the current sky-only frame
+!       lies between -2 sigma and +0.5 sigma, where sigma is the RMS
+!       error of the fit determined by SURFIT
+!
+        MATHS IA='P1' IB=MODELSKY.TMP OUTPUT=SKY.TMP A=SURFIT_RMSERROR
+!
+!****   End of LOOP_1, do next iteration
+!
+        IF ITERATION.LT.'P4' THEN GOTO LOOP_1
+!END LOOP_1
+!
+!****   Calculate the final sky model
+!
+        WRITE SYS$OUTPUT "    FITTING SKY MODEL TO FINAL SKY-ONLY FRAME"
+        SURFIT INPUT=SKY.TMP OUTPUT=MODELSKY.TMP
+!
+!****   Subtract the final model sky from the input image
+!
+        MATHS FORMULA=IA-IB IA='P1' IB=MODELSKY.TMP OUTPUT='P2' TITLE='P3'
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "    Finished !!! Sky corrected image is ",p2
+        WRITE SYS$OUTPUT "    Original sky poly file is SKYXY.TMP"
+        WRITE SYS$OUTPUT "    Sky areas fitted in image SKY.TMP"
+        WRITE SYS$OUTPUT "    Model sky in image MODELSKY.TMP"
+        WRITE SYS$OUTPUT " "
+!
+!****   Tidy up
+!
+END:
+        CLEAR MATHS
+        CLEAR SURFIT
+        SET NOON

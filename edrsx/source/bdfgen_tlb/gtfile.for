@@ -1,0 +1,101 @@
+      SUBROUTINE GTFILE(UNIT,PNAME,NULL,WRITE,IERR)
+*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*PURPOSE
+*       TO OPEN A FILE ON UNIT 'UNIT' AND PERFORM
+*       CHECKS ON THE VALIDITY OF THE FILE NAME.
+*
+*SOURCE
+*       GTFILE.FOR in BDFGEN.TLB
+*
+*ARGUMENTS
+*       UNIT (IN)
+*       INTEGER
+*              THE LOGICAL UNIT NUMBER TO ATTACH THE FILE TO
+*       PNAME (IN)
+*       CHARACTER*(*)
+*              THE PARAMETER NAME FOR THE FILE
+*       NULL (IN)
+*       LOGICAL
+*              IF .TRUE. THEN A NULL VALUE (RETURN) IS ACCEPTABLE,
+*              OTHERWISE IT IS NOT.
+*       WRITE (IN)
+*       LOGICAL
+*              IF .TRUE. THEN THE FILE IS OPENED FOR READ AND WRITE,
+*              OTHERWISE IT IS OPENED FOR READ ONLY.
+*       IERR (OUT)
+*       INTEGER
+*              ERROR FLAG . ZERO FOR SUCCESS.
+*
+*CALLS
+*       STARLINK:
+*              RDKEYC,CNPAR,
+*
+*WRITTEN BY
+*       D.S. BERRY
+*------------------------------------------------------------------
+C
+C
+      PARAMETER (MAXBAD=3)
+      INTEGER UNIT
+      CHARACTER*30 FNAME,PNAME*(*)
+      LOGICAL NULL,WRITE
+C
+C INITIALIZE ERROR FLAG AND BAD ENTRY COUNTER, NBAD.
+C
+      IERR=0
+      NBAD=0
+C
+C GET THE NAME OF THE FILE FROM THE USER
+C
+   10 CALL RDKEYC(PNAME,.FALSE.,1,FNAME,NVAL,ISTAT)
+      IF(ISTAT.EQ.0) THEN
+C
+C ATTEMPT TO OPEN IT
+C
+         IF(WRITE) THEN
+            OPEN(UNIT,FILE=FNAME,STATUS='UNKNOWN',IOSTAT=ISTAT)
+         ELSE
+            OPEN(UNIT,FILE=FNAME,READONLY,STATUS='OLD',IOSTAT=ISTAT)
+         ENDIF
+C
+C IF AN ERROR WAS DETECTED IN OPENING THE FILE, GET A NEW VALUE
+C UP TO MAXBAD TIMES.
+C
+         IF(ISTAT.NE.0) THEN
+            NBAD=NBAD+1
+            IF(NBAD.LE.MAXBAD) THEN
+               CALL CNPAR(PNAME,ISTAT)
+               CALL WRERR('NOACCESS')
+               GOTO 10
+            ELSE
+               CALL WRERR('TOOBAD')
+               IERR=2
+               GOTO 999
+            ENDIF
+         ENDIF
+C
+C IF A NULL VALUE WAS RETURNED FOR THE FILE NAME THEN EITHER RETURN
+C WITH IERR=1 IF A NULL VALUE IS OK, OR GO ROUND FOR A NEW VALUE.
+C
+      ELSE IF(ISTAT.EQ.1) THEN
+         IF(NULL) THEN
+            IERR=1
+         ELSE
+            IF(NBAD.LT.MAXBAD) THEN
+               CALL CNPAR(PNAME,ISTAT)
+               CALL WRERR('NONULL')
+               NBAD=NBAD+1
+               GOTO 10
+            ELSE
+               IERR=2
+               GOTO 999
+            ENDIF
+         ENDIF
+      ELSE
+         IERR=3
+      ENDIF
+C
+C FINISH
+C
+  999 RETURN
+      END

@@ -1,0 +1,13 @@
+INPUT/FRAME(R)/
+FREQ/VALUE/GLOBAL_FREQ/
+RANGE/VALUE/
+NUMFREQ/VALUE/
+MODE/VALUE/
+POWER/FRAME(W)/
+WINDOW/FRAME(W)/
+HELLF/ERROR/*** Bad pair of frequencies ***/
+HELLNF/ERROR/*** Bad number of frequencies ***/
+HELLMODE/ERROR/*** Mode must 1 2 or 3 ***/
+ERRIN/ERROR/*** Failed to obtain input dataset ***/
+ERRDYN/ERROR/*** Failed when getting workspace ***/
+ERROUT/ERROR/*** Failed to obtain output dataset ***/

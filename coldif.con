@@ -1,0 +1,18 @@
+!+
+!   COLDIF.
+!
+!   A C Davenhall./ROE/                                          4/2/83.
+!-
+CL1PRF/FRAME(R)/        ! 1st input profile.
+CL2PRF/FRAME(R)/        ! 2nd input profile.
+OUTPRF/FRAME(W)/        ! Output colour difference profile.
+WORK1/FRAME(W)/         ! Work array.
+WORK2/FRAME(W)/         !  "     "  .
+WORK3/FRAME(W)/         !  "     "  .
+WORK4/FRAME(W)/         !  "     "  .
+WORK5/FRAME(W)/         !  "     "  .
+WORK6/FRAME(W)/         !  "     "  .
+WORK7/FRAME(W)/         !  "     "  .
+REPLY/VALUE/
+CL1SKY/VALUE/           ! Sky brightness, 1st profile (mag./sq.arcsec.).
+CL2SKY/VALUE/           ! Sky brightness, 2nd profile (mag./sq.arcsec.).

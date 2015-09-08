@@ -1,0 +1,92 @@
+!
+!****  	Tell user what the procedure does
+!
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT "   Convolves an image with another image by taking"
+WRITE SYS$OUTPUT "   the product of the Fourier transforms of the two"
+WRITE SYS$OUTPUT "   images.
+WRITE SYS$OUTPUT "   ------------------------------------------------"
+WRITE SYS$OUTPUT " "
+!
+!****  	Get required values from the user
+!
+!	P1 - 1st image ("DATA" image)
+!       P2 - 2nd image ("PSF" image)
+!	P3 - Output image (the convolution of p1 and p2)
+!       P4 - Title for output image
+!	P5 - If Y then work files are deleted. If N then they are left.
+!
+IF P1.EQS."" THEN INQUIRE P1 "Data image?"
+IF P1.EQS."" THEN EXIT
+IF P2.EQS."" THEN INQUIRE P2 "PSF image?"
+IF P2.EQS."" THEN EXIT
+IF P3.EQS."" THEN INQUIRE P3 "Output image?"
+IF P3.EQS."" THEN EXIT
+IF P4.EQS."" THEN INQUIRE P4 "Output title?"
+IF P5.EQS."" THEN INQUIRE P5 "Delete work files when finished? (Y/N)"
+IF P5.NES."Y" THEN WRITE SYS$OUTPUT "*** WORK FILES WILL BE LEFT ON DISK"
+!
+!****	Set up values for FOURIER parameters that are not used
+!
+LET FOURIER_REALOUT=
+LET FOURIER_IMAGOUT=
+LET FOURIER_REALIN=
+LET FOURIER_IMAGIN=
+LET FOURIER_RL_TITLE=
+LET FOURIER_IM_TITLE=
+LET FOURIER_PH_TITLE=
+LET FOURIER_PW_TITLE=
+!
+!****	Get Fourier transform of DATA image, in form of images of
+!	power and phase
+!
+FOURIER INPUT='P1' HERMOUT= POWEROUT=D_PW PHASEOUT=D_PH
+!
+!****	Calculate the positions of the bottom left and top right corners
+!	of the DATA image within the frame of the PSF image which put
+!	the centre of the PSF image at the centre of the DATA image
+!
+DESCRIPT IMAGE=D_PW ILEVEL=1
+M='F$TRNLNM("DESCRIPT_NAXIS1")'
+N='F$TRNLNM("DESCRIPT_NAXIS2")'
+DESCRIPT IMAGE='P2' ILEVEL=1
+MO='F$TRNLNM("DESCRIPT_NAXIS1")'
+NO='F$TRNLNM("DESCRIPT_NAXIS2")'
+XL=1+MO/2-M/2
+XH=(M+1)/2+MO/2
+YL=1+NO/2-N/2
+YH=(N+1)/2+NO/2
+!
+!****	Expand the PSF image to be the same size as the transform of
+! 	the DATA image, with the PSF centre at the zero frequency 
+!	position
+!
+TRIM XYSOURCE=PARAMETER INPUT='P2' OUTPUT=PSF XYA='XL','YL' XYB='XH','YH'
+!
+!****	Normalise the expanded PSF to have a total data sum of unity
+!
+DATARANGE ILEVEL=1 INPUT='P2'
+ARITH IMAGE=PSF FUNCTION=DIV CONSTANT=DATARANGE_DATASUM
+!
+!****	Take the Fourier transform of the normalised PSF, shifting the
+!	transform origin to the image centre
+!
+FOURIER INPUT=PSF SHIFT=Y HERMOUT= POWEROUT=P_PW PHASEOUT=P_PH
+!
+!****	Multiply the power images and add the phase images of DATA and
+!	PSF to get the transform of the convolution
+!
+IMGARITH AIMAGE=D_PW BIMAGE=P_PW FUNCTION=* OUTPUT=C_PW TITLE=
+MATHS FORMULA=IA+IB IA=D_PH IB=P_PH OUTPUT=C_PH TITLE=
+!
+!****	Take inverse Fourier transform of the power and phase calculated
+!	above. This will be the final convolved image.
+!
+FOURIER INVERSE=T HERMIN= POWERIN=C_PW PHASEIN=C_PH OUTPUT='P3' TITLE='P4'
+CLEAR FOURIER
+!
+!****	Delete work files if requested
+!
+IF P5.NES."Y" THEN EXIT
+DELETE PSF.BDF;1,D_PW.BDF;1,D_PH.BDF;1,P_PW.BDF;1,P_PH.BDF;1,C_PW.BDF;1
+DELETE C_PH.BDF;1

@@ -1,0 +1,7 @@
+INPUT/FRAME(R)/
+EPOCHS/VALUE/
+OUTPUT/FRAME(W)/
+TITLE/VALUE/
+AGAIN/VALUE/
+HELLIN/ERROR/*** Failed to obtain input dataset ***
+HELLOUT/ERROR/*** Failed to obtain an output dataset ***

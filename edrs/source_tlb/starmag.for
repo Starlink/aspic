@@ -1,0 +1,13 @@
+      program call_starma
+ 
+*
+* CALL STARMA TO FIT A FUNCTION TO A SET OF STARS
+* WHOSE COORDINATES ARE GIVEN AS A LIST, AND TO
+* DETERMINE THEIR INTEGRATED MAGNITUDES
+*
+      call starma
+ 
+      end
+ 
+ 
+ 

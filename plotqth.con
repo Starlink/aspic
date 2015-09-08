@@ -1,0 +1,10 @@
+!	PLOTQTH		D. TUDHOPE/ROE/Sept 1982/
+!            TO THRESHOLD AND PLOT AN IMAGE onto a quadrant of args scaling up or down
+!		used in IAM suite
+INPUTIMG/FRAME(R)/       !   (RA) INPUT IMAGE
+TZEROD_/VALUE/           !   (R) MIN INTENSITY IN IMAGE
+TMAXD_/VALUE/            !   (R) MAX .................
+NAUTO_/VALUE/0           !   (I) AUTOSCALE FLAG - 0 IS AUTOSCALE
+REPLY/VALUE/             !   (CH) QUADRANT
+THRLD/VALUE/-99999.0     !   (R) THRESHOLD FOR IMAGE
+NOT/ERROR/ERROR - THRESHOLD MUST BE SET FIRST

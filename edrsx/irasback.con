@@ -1,0 +1,41 @@
+!   Connection file for program IRASBACK
+!
+OUTPUT/FRAME(W)/	!Output image to use as background for mosaic
+IMAGE1/FRAME(R)/	!Input image 1 of mosaic
+IMAGE2/FRAME(R)/	!Input image 2 of mosaic
+IMAGE3/FRAME(R)//	!Input image 3 of mosaic
+IMAGE4/FRAME(R)//	!Input image 4 of mosaic
+IMAGE5/FRAME(R)//	!Input image 5 of mosaic
+IMAGE6/FRAME(R)//	!Input image 6 of mosaic
+IMAGE7/FRAME(R)//	!Input image 7 of mosaic
+IMAGE8/FRAME(R)//	!Input image 8 of mosaic
+IMAGE9/FRAME(R)//	!Input image 9 of mosaic
+IMAGE10/FRAME(R)//	!Input image 10 of mosaic
+IMAGE11/FRAME(R)//	!Input image 11 of mosaic
+IMAGE12/FRAME(R)//	!Input image 12 of mosaic
+IMAGE13/FRAME(R)//	!Input image 13 of mosaic
+IMAGE14/FRAME(R)//	!Input image 14 of mosaic
+IMAGE15/FRAME(R)//	!Input image 15 of mosaic
+IMAGE16/FRAME(R)//	!Input image 16 of mosaic
+IMAGE17/FRAME(R)//	!Input image 17 of mosaic
+IMAGE18/FRAME(R)//	!Input image 18 of mosaic
+IMAGE19/FRAME(R)//	!Input image 19 of mosaic
+IMAGE20/FRAME(R)//	!Input image 20 of mosaic
+!
+!   Error parameters specific to IRASBACK
+!
+NOCOMB/ERROR/*** Image was produced by COMBINE but has non-zero CROTA1/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets....
+!
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+PIXNOSIZ/ERROR/*** Pixels have zero area/
+TOOBAD/ERROR/*** Too many bad values given/

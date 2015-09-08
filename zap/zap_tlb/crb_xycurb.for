@@ -1,0 +1,272 @@
+	SUBROUTINE CRB_XYCURB
+C
+C
+C
+      CHARACTER CVAL*1,TITLE*30,PRBUF*40,KOVC*1,TEXT*72
+      INTEGER KVAL(2)
+C
+C
+C
+      INCLUDE 'INTERIM(ERRPAR)'
+      INCLUDE 'INTERIM(FMTPAR)'
+C
+C OBTAIN INTERACTION LEVEL
+C
+      ILEVEL=2
+      CALL GETPAR('ILEVEL','INTEGER',1,1.0,3.0,.TRUE.,ILEVEL,RVAL,IERR)
+C
+C DETERMINE IF OVERLAYS TO BE CLEARED BEFORE ENTRY
+C
+      CALL WRUSER('CLEAR PREVIOUS CROSSES ?',JSTAT)
+      KOVC = 'Y'
+      CALL RDKEYC('OVERCL',.TRUE.,1,KOVC,NVAL,ISTAT)
+      IF (KOVC.NE.'Y') KOVC = 'N'
+C
+C  Get if numbers to be added to positions
+C
+      CALL WRUSER('NUMBER THE POINTS ?',ISTAT)
+      NUMINP = 2
+      CALL GETCMD('NUMINP','NO,YES.',1,NUMINP,PRBUF,NVAL,ISTAT)
+C
+C OBTAIN THE INPUT DATA FRAME
+C
+      CALL WRUSER('INPUT XYLIST ?',ISTAT)
+      CALL GTXYLR('INPUT',.TRUE.,NITEM,LSTLEN,IPIN,IERR)
+      IF (IERR.NE.0) THEN
+         CALL WRUSER('INVALID XY LIST',ISTAT)
+         GO TO 99
+      ENDIF
+C
+C  GET LIMITS OF INPUT LIST TO BE USED
+C
+      KVAL(1) = 1
+      KVAL(2) = LSTLEN
+      CALL RDKEYI('LIMITS2',.TRUE.,2,KVAL,I,IERR)
+      IF (KVAL(1).LE.1.OR.KVAL(1).GT.LSTLEN) KVAL(1) = 1
+      IF (KVAL(2).LT.1.OR.KVAL(2).GT.LSTLEN) KVAL(2) = LSTLEN
+      LENST = KVAL(1)
+      LENEND = KVAL(2)
+C
+C  GET IF OUTPUT ALL OR JUST THE SECTION DONE
+C
+      KALLIN = 1
+      CALL GETCMD('ALLINP','YES,NO.',1,KALLIN,PRBUF,KK,IERR)
+C
+C  Get if only to handle those inside display area
+C
+    1 KINSID = 1
+      CALL GETCMD('INSIDE','INSIDE,ALL,HELP,?.',1,KINSID,PRBUF,KK,IERR)
+      IF (KINSID.EQ.3.OR.KINSID.EQ.4) THEN
+         CALL WRUSER('Choices are:  INSIDE  Only handle positions'
+     +               //' inside displayed area',ISTAT)
+         CALL WRUSER('              ALL     Handle all, inside or out',
+     +               ISTAT)
+         CALL CNPAR('INSIDE',ISTAT)
+         GO TO 1
+      ENDIF
+C
+C  Get wether to save points which lie outside displayed area
+C
+    2 KSAVE = 2
+      CALL GETCMD('SAVEOUT','YES,NO,HELP,?.',1,KSAVE,PRBUF,KK,IERR)
+      IF (KSAVE.EQ.3.OR.KSAVE.EQ.4) THEN
+         CALL WRUSER('Choices are:  YES  Save points outside displayed'
+     +               //' area',ISTAT)
+         CALL WRUSER('              NO   Do not',ISTAT)
+         CALL CNPAR('SAVEOUT',ISTAT)
+         GO TO 2
+      ENDIF
+C
+C  COPY XY INPUT LIST TO WORKSPACE
+C
+      NXY = 3*LSTLEN
+      CALL GETDYN('WORK',204,NXY,IPW,ISTAT)
+      IF (ISTAT.NE.0) THEN
+         CALL WRUSER('CANT GET WORK SPACE',ISTATA)
+         GO TO 99
+      ENDIF
+      CALL EXTLSA (%VAL(IPIN),NITEM,LSTLEN,1,LSTLEN,6,7,
+     +             %VAL(IPW),3,LSTLEN,1,1)
+C
+C  Initialise the ARGS and get compression and window data
+C
+      ISTAT=0
+      CALL SRINIT(0,.FALSE.,ISTAT)
+      IF (ISTAT.NE.0) THEN
+         CALL WRERR('NOARGS')
+         GO TO 99
+      ELSE
+         CALL ARGS_NUMIM(ID)
+         CALL ARGS_RDIM(IXPOS,IYPOS,ISX,ISY,I,I,ISTAT)
+         CALL ARGS_RDPAR('COMPRE',1,TEXT,NVALS,ISTAT)
+         IF (ISTAT.EQ.0) THEN
+            READ(TEXT,900)KXB,KXE,KYB,KYE,KCOMP
+  900       FORMAT(5I10)
+            COMFAC = REAL(KCOMP)
+            DX = REAL(KXB)
+            DY = REAL(KYB)
+         ELSE
+            COMFAC = 1.0
+            DX = 1.0
+            DY = 1.0
+         ENDIF
+      ENDIF
+C
+C CALL XYINCB TO PUT NEW VALUES TO THE WORKSPACE
+C
+      CALL XYINCB(%VAL(IPW),LSTLEN,
+     +      ILEVEL,IERR,KOVC,NUMINP,COMFAC,DX,DY,ISX,ISY,
+     +      LENST,LENEND,KLEN,KALLIN,KINSID,KSAVE)
+C
+C  REPOSITION IMAGE AT CENTRE OF SCREEN
+C
+      CALL ARCEMA(255,255,1,1,1)
+C
+C IF NO LIST OBTAINED, EXIT
+C
+      IF (KLEN.EQ.0) THEN
+         CALL WRERR('NOLIST')
+         GO TO 99
+      ENDIF
+C
+C TELL USER HOW MANY ENTRIES IN OUTPUT LIST
+C
+      IF (ILEVEL.GE.2) THEN
+         WRITE(PRBUF,104)KLEN
+  104    FORMAT('   OUTPUT LIST HAS ',I7,' ENTRIES')
+         IF (KLEN.EQ.1) PRBUF(28:)='ENTRY'
+         CALL LBGONE(PRBUF(20:))
+         CALL WRUSER(' ',ISTAT)
+         CALL WRUSER(PRBUF,ISTAT)
+      ENDIF
+C
+C  Get Output frame
+C
+	CALL GTXYLW('OUTPUT',.FALSE.,NITEM,KLEN,IPOUT,IERR2)
+	IF(IERR2.EQ.0) THEN
+C
+C OUTPUT FRAME SUCCESSFULLY OBTAINED. COPY IDENTIFIERS AND POSNS
+C FROM INPUT LIST TO OUTPUT. THEN COPY NEW POSNS FROM WORKSPACE TO
+C OUTPUT.
+C
+         CALL STORE(%VAL(IPIN),NITEM,LSTLEN,%VAL(IPW),%VAL(IPOUT),KLEN)
+C
+C DEFAULT OUTPUT TITLE IS EITHER THE INPUT TITLE, OR BLANK.
+C THEN OBTAIN A NEW ONE FROM THE ENVIRONMENT
+C
+	    CALL GTDSCR('INPUT','TITLE','CHARACTER',IVAL,RVAL,TITLE,
+     +      IERR)
+          CALL CHARLN(TITLE,LEN)
+          IF (LEN.EQ.0) TITLE = 'Output from XYCURB'
+          CALL RDKEYC('TITLE',.TRUE.,1,TITLE,NVAL,ISTAT)
+C
+C COPY INPUT DESCRIPTOR TO OUTPUT (IF AVAILABLE) THEN UPDATE
+C DESCRIPTOR ITEMS
+C
+	  CALL CYDSCR('INPUT','OUTPUT',ISTAT)
+	  CALL PTDSCR('OUTPUT','LSTLEN','INTEGER',KLEN,RVAL,CVAL,
+     +    IERR)
+	  CALL PTDSCR('OUTPUT','TITLE','CHARACTER',IVAL,RVAL,TITLE,
+     +	  IERR)
+      ENDIF
+C
+C  Exit
+C
+   99 CALL FRDATA(' ',ISTAT)
+C
+C
+C
+	CALL CNPAR('OVERCL',ISTAT)
+	CALL CNPAR('NUMINP',ISTAT)
+	CALL CNPAR('INPUT',ISTAT)
+	CALL CNPAR('OUTPUT',ISTAT)
+	CALL CNPAR('TITLE',ISTAT)
+	CALL CNPAR('LIMITS2',ISTAT)
+	CALL CNPAR('ALLINP',ISTAT)
+	CALL CNPAR('INSIDE',ISTAT)
+	CALL CNPAR('SAVOUT',ISTAT)
+      END
+ 
+ 
+ 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C      **************
+C      *            *
+C      * S/R XYINCB *
+C      *            *
+C      **************
+C
+C
+* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*PURPOSE
+*	TO INTERACTIVELY OBTAIN A SET OF X,Y POSITIONS FROM AN INPUT
+*     XY LIST, USING THE ARGS CURSOR TO MODIFY THE POSITIONS
+*
+*METHOD
+*        GET ALL POSNS FROM INPUT LIST AND PUT ON ARGS
+*       SCREEN USING S/R CROSS
+*       OBTAIN X,Y POSITION FROM THE ARGS SCREEN USING ASP_PAN
+*
+*ARGUMENTS
+*	X,Y (IN/OUT)
+*	REAL(LSTLEN)
+*		LISTS OF X,Y POSITIONS
+*     LSTLEN (IN)
+*          NO OF OBJECTS IN INPUT LIST
+*       ILEVEL (IN)
+*       INTEGER
+*               INTERACTION LEVEL: CONTROLS PRINTING OF POSITIONS ON
+*               SCREEN AS THEY ARE OBTAINED
+*	IERR (OUT)
+*	INTEGER
+*		ERROR FLAG: ZERO FOR SUCCESS
+*		1: LEN .GT. MAXLEN ON ENTRY
+*
+*     KOVC (IN)
+*     LOGICAL
+*             FLAG FOR CLEARING OVERLAY PLANE ON ENTRY
+*     COMFAC (IN)
+*     REAL
+*             COMPRESSION FACTOR OF DISPLAY
+*     DX     (IN)
+*     REAL
+*             DISPLAY X START COORDINATE
+*     DY     (IN)
+*     REAL
+*             DISPLAY Y START COORDINATE
+*
+*  Input
+*     NUMINP Int       If = 2 Put up numbers at crosses, if =1 dont
+*     ISX    Int       X width of ARGS display
+*     ISY    Int       Y width of ARGS display
+*     KALLIN Int       If=1, store all, if = 2 store only the section do
+*     KINSID Int       If=1, ignore points outside display, if=2 do all
+*     KSAVE  Int       If=1, save points outside displayed area, if=2 no
+*  Output
+*     KLEN   Int       No of positions to store
+*
+*STARLINK PARAMETERS
+*
+*CALLS
+*	EDRS PACKAGE:
+*		GETCMD
+*	STARLINK:
+*		RDKEYC,CNPAR,CTOR,WRERR,CTOI
+*     ASPIC:
+*             ASP_PAN,ARGS_OVOPN,ARGS_OVOP,ARGS_NUMIM,ARGS_OVCL
+*     THIS FILE:
+*             CROSS,CROSSA
+*
+*NOTES
+*	USES BYTE ARRAYS
+*
+*WRITTEN BY
+*	R.F. WARREN-SMITH
+*ADAPTED BY
+*     A.J. PENNY
+* ----------------------------------------------------------------------
+C
+C
+C

@@ -1,0 +1,106 @@
+$	!
+$	!****	Tell user what the procedure does
+$	!
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "   Displays 2 images on ARGS and blinks between them."
+$	WRITE SYS$OUTPUT "   The images can be moved relative to each other"
+$	WRITE SYS$OUTPUT "   while blinking is in progress"
+$	WRITE SYS$OUTPUT "   ----------------------------------------------"
+$	WRITE SYS$OUTPUT " "
+$	!
+$	!****	Get required parameters from user
+$	!
+$	IF P1.EQS."" THEN INQUIRE P1 "First (moving) image"
+$	IF P2.EQS."" THEN INQUIRE P2 "Second (stationary) image"
+$	!
+$	!****	Find the size of each image so that they can be 
+$	!       displayed in the correct relative positions
+$	!
+$	DESCRIPT ILEVEL=1 IMAGE='P1'
+$	NPIX1=F$INTEGER(F$LOGICAL("DESCRIPT_NAXIS1"))
+$	NLIN1=F$INTEGER(F$LOGICAL("DESCRIPT_NAXIS2"))
+$	DESCRIPT ILEVEL=1 IMAGE='P2'
+$	NPIX2=F$INTEGER(F$LOGICAL("DESCRIPT_NAXIS1"))
+$	NLIN2=F$INTEGER(F$LOGICAL("DESCRIPT_NAXIS2"))
+$	!
+$	!**** 	Allocate and reset the ARGS
+$	!
+$	ALLOCATE ARGS_DEVICE
+$	ARESET
+$	!
+$	!****	If logical name BLINK_AUTO is TRUE or undefined
+$	!	then ARGPIC uses auto scaling, otherwise the
+$	! 	user is prompted for ARGPIC_DRANGE in the normal way
+$	!
+$	BLINK_AUTO=F$LOGICAL("BLINK_AUTO")
+$	IF BLINK_AUTO.EQS."" THEN BLINK_AUTO="TRUE"
+$	IF BLINK_AUTO.NES."TRUE" THEN GOTO LBL1
+$	LET ARGPIC_DRANGE=
+$LBL1:
+$	!
+$	!****	Disable the top 8 bit planes of the ARGS
+$	!
+$	HEXFILE FLNAME=MASK8
+$	!
+$	!****	Display the 1st image in the bottom 8 bit planes, with
+$	!	the centre pixel at the screen centre
+$	!
+$	WRITE SYS$OUTPUT "Displaying 1st image"
+$	ARGPIC INPUT='P1'
+$	!
+$	!****	Swap the bottom and the top 8 bit planes, then disable
+$	!	the top 8 bit planes again
+$	!
+$	HEXFILE FLNAME=ZPAFLIP
+$	HEXFILE FLNAME=MASK8
+$	!
+$	!****	Display the 2nd image in the bottom 8 bit planes, with
+$	!	the bottom left corner co-incident with the bottom left
+$	!	corner of the 1st image
+$	!
+$	WRITE SYS$OUTPUT "Displaying 2nd image"
+$	XCEN2=256+(NPIX2-NPIX1)/2
+$	YCEN2=256+(NLIN2-NLIN1)/2
+$	ARGPIC INPUT='P2' XC='XCEN2' YC='YCEN2'
+$	!
+$	!****	Tell the user how to use the tracker ball
+$	!
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT " Use of tracker ball:
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "     Button 1 (green): Start/decrease blinking frequency"
+$	WRITE SYS$OUTPUT "     Button 2        : Display first image"
+$	WRITE SYS$OUTPUT "     Button 3        : Display second image"
+$	WRITE SYS$OUTPUT "     Button 4 (red)  : Quit"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT " The tracker ball can be used to move the first image"
+$	WRITE SYS$OUTPUT " relative to the second while blinking is in progress."
+$	WRITE SYS$OUTPUT " "
+$	!
+$	!****	Run ASPIC program BLINKER to alternately display the
+$	!	top and bottom 8 bit planes, allowing the bottom 8
+$	!	to be panned.
+$	BLINKER
+$	!
+$	!****	Recover the shift between the final and initial
+$	!	positions of the 2nd image as an EDRS transformation
+$	!	co-efficients parameter for use by RESAMPLE, etc.
+$	!
+$	AX=F$LOGICAL("BLINKER_AX")
+$	AY=F$LOGICAL("BLINKER_AY")
+$	DEFINE BLINK_TRCOEFFS "''AX',1,0,''AY',0,1"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT " Co-efficients of transformation from final position"
+$	WRITE SYS$OUTPUT " of first (moving) image to second (stationary) image"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT "     C(1)=",AX,", C(2)=1.0, C(3)=0.0"
+$	WRITE SYS$OUTPUT "     C(4)=",AY,", C(5)=0.0, C(6)=1.0"
+$	WRITE SYS$OUTPUT " "
+$	WRITE SYS$OUTPUT " They can be accessed by other programs as 
+$	WRITE SYS$OUTPUT " BLINK_TRCOEFFS"
+$	WRITE SYS$OUTPUT " "
+$	!
+$	!****	De-allocate ARGS
+$	!
+$	DEALLOCATE ARGS_DEVICE
+$	CLEAR ARGPIC

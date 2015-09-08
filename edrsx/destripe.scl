@@ -1,0 +1,276 @@
+!
+! DESTRIPE: Main procedure for doing IRAS destriping
+!
+!      	Implements the IRAS destriping scheme described by Van Buren in
+! A.J. 94, P1092 (Oct. '87), using EDRS and EDRSX. The scheme is a bit
+! "hit and miss" and many possible variations could be tried. For this
+! reason the user should not be limited by this procedure but should
+! take it as a starting point for their own destriping experiments (see
+! the "Cook-book" help on destriping in the EDRSX help library).
+!      As it stands this procedure accepts the following as input:
+!   1) The IRAS image to be destriped
+!   2) A weighting image produced on a previous run of DESTRIPE
+!   3) If a new weight image is to be produced, then its name is 
+!      required and also a parameter describing it (usually FWHM)
+!   4) A mask image produced on a previous run of DESTRIPE
+!   5) If a new mask image is to be produced, then its name is required.
+!   6) The name of the output, destriped image.
+!   7) Whether or not to delete work files after they have been used
+!-----------------------------------------------------------------------
+!
+BELL=""
+SAY="WRITE SYS$OUTPUT "
+!
+!
+!
+! ****	Give warning
+!
+SAY ""
+SAY "PROCEDURE: DESTRIPE
+SAY ""
+SAY "   Implements the IRAS destriping scheme described"
+SAY "   by Van Buren in A.J. 94, P1092 (Oct. '87), using "
+SAY "   programs in EDRS and EDRSX. The scheme is a bit  "
+SAY "   hit and miss and many possible variations could"
+SAY "   be tried. For this  reason the user should not be "
+SAY "   limited by this procedure but should  take it as a "
+SAY "   starting point for their own destriping experiments "
+SAY "   (see  the Cook-book help on destriping in the EDRSX "
+SAY "   help library). The  source for this procedure can be "
+SAY "   seen by typing  TYPE EDRSX:DESTRIPE.SCL. 
+SAY "         For help on using this procedure type: "
+SAY " "
+SAY "     ""HELP COOKBOOK DESTRIPING FOURIER""  "
+SAY "   ----------------------------------------------------"
+!
+!
+!
+! ****	If first parameter (P1) has the value "LBLx", then cancel 
+! 	parameter p1 but jump to the label LBLx after getting the 
+! 	parameter values (this enables the procedure to be entered
+! 	at any of the labels and so avoid doing the earlier part).
+!
+JUMP=0
+IF P1-"LBL".EQS.P1 THEN GOTO LBL0
+   JUMP=F$INTEGER(P1-"LBL")
+   P1=""
+LBL0:
+!
+!
+!
+! ****	Get required parameter values
+!
+INQUIRE/NOPUN DATA "Input image to be destriped:="
+TDATA=F$SEARCH(F$PARSE(DATA,".BDF;1"))
+IF TDATA.EQS."" THEN EXIT
+!
+INQUIRE/NOPUN WEIGHTIN "Weight image to be used:="
+TWEIGHTIN=F$SEARCH(F$PARSE(WEIGHTIN,".BDF;1"))
+IF TWEIGHTIN.NES."" THEN GOTO LBL1
+   SAY " No valid image given. A new weight image will be generated"
+   INQUIRE/NOPUN FWHM "FWHM of new weight image (in pixels):="
+   INQUIRE/NOPUN WEIGHTOUT "Name of new weight image:="
+LBL1:
+!
+INQUIRE/NOPUN MASKIN "Mask image to be used:="
+TMASKIN=F$SEARCH(F$PARSE(MASKIN,".BDF;1"))
+IF TMASKIN.NES."" THEN GOTO LBL2
+   SAY "No valid image given. A new mask image will be generated"
+   INQUIRE/NOPUN MASKOUT "Name of new mask image:="
+   INQUIRE/NOPUN MASKTYPE "Type of mask required (WEDGE/CONSTANT/CUSTOM):="
+LBL2:
+!
+INQUIRE/NOPUN DELETE_FILES "Delete files after use? (answer Y or N):"
+IF DELETE_FILES.NES."Y".AND.DELETE_FILES.NES."N" THEN GOTO LBL2
+!
+INQUIRE/NOPUN OUTPUT "Name of output destriped image:="
+IF OUTPUT.EQS."" THEN EXIT
+!
+!
+!
+! ****	Set up values for program parameters which are not used, to 
+!	reduce the amount of text needed on each command line
+!
+LET FOURIER_HERMIN=
+LET FOURIER_HERMOUT=
+LET FOURIER_REALOUT=
+LET FOURIER_IMAGOUT=
+LET FOURIER_REALIN=
+LET FOURIER_IMAGIN=
+LET FOURIER_TITLE=
+LET FOURIER_PW_TITLE=
+LET FOURIER_PH_TITLE=
+LET MATHS_TITLE=
+!
+!
+!
+! ****	Jump forward if user wants to enter at some point other than 
+!	the start
+!
+IF JUMP.GT.2.AND.JUMP.LT.14 THEN GOTO LBL'JUMP'
+!
+!
+!
+! ****	Get Fourier transform of the input image in form of seperate 
+! 	power and phase images
+!
+SAY ""
+SAY "   >>>>>  Calculating Fourier transform of input"
+SAY ""
+FOURIER INPUT='DATA' POWEROUT=D_PW PHASEOUT=D_PH
+!
+!
+!
+! ****	See how big the Fourier transform images are
+!
+LBL3:
+DESCRIPT IMAGE=D_PW ILEVEL=1
+NPIX=F$TRNLNM("DESCRIPT_NAXIS1")
+NLIN=F$TRNLNM("DESCRIPT_NAXIS2")
+!
+!
+!
+! ****	If required, produce a new weight image
+!
+IF WEIGHTIN.NES."" THEN GOTO LBL4
+   SAY ""
+   SAY "  >>>>>  Producing new weight image"
+   SAY ""
+   WEIGHTGEN GAUSSIAN 'WEIGHTOUT' 'NPIX' 'NLIN' 'FWHM'
+   WEIGHTIN=WEIGHTOUT
+LBL4:
+!
+!
+!
+! ****	Weight the input images Fourier transform (this is equivalent to
+! 	convolving the data image)
+!
+LBL5:
+SAY ""
+SAY "  >>>>>  Weighting the input images Fourier transform"
+SAY ""
+MATHS FORMULA=IA*(1-IB) IA=D_PW IB='WEIGHTIN' OUTPUT=FK_PW 
+IF DELETE_FILES.EQS."Y" THEN DELETE D_PW.BDF;*
+!
+!
+!
+! ****	Take the inverse Fourier transform of this power image, (using 
+! 	the phase of the original image) to produce a version of the 
+!	input image with low frequencies attenuated (this image is 
+!	called Fk in Van Buren's paper)
+!
+LBL6:
+SAY ""
+SAY "  >>>>>  Producing high-pass filtered image, Fk"
+SAY ""
+FOURIER INVERSE=YES POWERIN=FK_PW PHASEIN=D_PH OUTPUT=FK
+IF DELETE_FILES.EQS."Y" THEN DELETE D_PH.BDF;*,FK_PW.BDF;*
+!
+!
+!
+! ****	Calculate the data values to clip this image at in order to 
+!	remove point source. The 1% and 85% cumulative histogram values 
+!	are used.
+!
+LBL7:
+SAY ""
+SAY "  >>>>>  Calculating clipping levels for Fk"
+SAY ""
+DATARANGE INPUT=FK HISTPC=1,85 ILEVEL=1
+LIMS=F$TRNLNM("DATARANGE_DATVALS")
+LOLIM=F$ELEMENT(0,",",LIMS)
+HILIM=F$ELEMENT(1,",",LIMS)
+!
+!
+!
+! ****	Clip Fk at these data values, replacing the clipped pixels by 
+! 	the value of the limit they have exceeded.
+!
+SAY ""
+SAY "  >>>>>  Clipping Fk at ",lolim," and ",hilim
+SAY ""
+MATHS FORMULA=MAX(A:MIN(B:IA)) A='LOLIM' B='HILIM' IA=FK OUTPUT=TK
+IF DELETE_FILES.EQS."Y" THEN DELETE FK.BDF;*
+!
+!
+!
+! ****	Calculate Fourier transform of Tk in power and phase form
+!
+LBL8:
+SAY ""
+SAY "  >>>>>  Taking Fourier transform of clipped image"
+SAY ""
+FOURIER INPUT=TK POWEROUT=TK_PW PHASEOUT=TK_PH
+IF DELETE_FILES.EQS."Y" THEN DELETE TK.BDF;*
+!
+!
+!
+! ****	Generate a new mask if required
+!
+LBL9:
+IF MASKIN.NES."" THEN GOTO LBL10
+   SAY ""
+   SAY "  >>>>>  Generating a new mask image"
+   SAY ""
+   MASKGEN 'MASKOUT' TK_PW 'MASKTYPE'
+   MASKIN=MASKOUT
+LBL10:
+!
+!
+!
+! ****	Mask out all but the areas of Fourier transform of Tk due to 
+! 	IRAS stripes
+!
+LBL11:
+SAY ""
+SAY "  >>>>>  Removing area outside mask from Fourier transform of Tk"
+SAY ""
+IMGARITH AIMAGE=TK_PW BIMAGE='MASKIN' FUNCTION=* OUTPUT=TK_PW_CUT TITLE=
+IF DELETE_FILES.EQS."Y" THEN DELETE TK_PW.BDF;*
+!
+!
+!
+! ****	Take inverse Fourier transform to produce image containing 
+!	just stripes
+!
+LBL12:
+SAY ""
+SAY "  >>>>>  Inverting Fourier transform to get ""stripes only"" image"
+SAY ""
+FOURIER INVERSE=YES POWERIN=TK_PW_CUT PHASEIN=TK_PH OUTPUT=STRIPES
+IF DELETE_FILES.EQS."Y" THEN DELETE TK_PW_CUT.BDF;*,TK_PH.BDF;*
+!
+!
+!
+! ****	Subtract stripes from the original image to get destriped image
+!
+LBL13:
+SAY ""
+SAY "  >>>>>  Subtracting stripes from the original image to get destriped image"
+SAY ""
+LET MATHS_TITLE="''DATA'_destriped"
+MATHS FORMULA=IA-IB IA='DATA' IB=STRIPES OUTPUT='OUTPUT'
+!
+!
+!
+! ****	Tidy up, and tell user where everything is
+!
+CLEAR MATHS
+CLEAR FOURIER
+SAY BELL,BELL
+SAY "FINISHED. Destriped image in ",output
+IF DELETE_FILES.EQS."Y" THEN GOTO LBL14
+   SAY "Work files retained on disk:"
+   SAY " D_PW.BDF  - Fourier transform power of ",DATA
+   SAY " D_PH.BDF  - Fourier transform phase of ",DATA
+   SAY " FK_PW.BDF - Fourier transform power of FK"
+   SAY " FK.BDF    - ",DATA," high pass filtered"
+   SAY " TK.BDF    - FK with high and low values clipped"
+   SAY " TK_PW.BDF - Fourier transform power of TK"
+   SAY " TK_PH.BDF - Fourier transform phase of TK"
+   SAY " TK_PW_CUT.BDF - TK_PW with everything but stripes area removed"
+   SAY " STRIPES.BDF   - Stripes which have been subtracted from the input"
+LBL14:
+IF F$TYPE(WEIGHTOUT).NES."" THEN SAY "New weight image in ",WEIGHTOUT
+IF F$TYPE(MASKOUT).NES."" THEN SAY "New mask image in ",MASKOUT
+EXIT

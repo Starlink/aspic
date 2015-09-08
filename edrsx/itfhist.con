@@ -1,0 +1,26 @@
+!   Connection file for program ITFHIST
+!
+INPUTA/FRAME(R)/	! Data image or histogram
+INPUTB/FRAME(R)/	! Reference image or histogram
+ITF/FRAME(W)/		! ITF frame output
+OUTPUT/FRAME(W)//	! Corrected data image output
+ITITLE/VALUE/		! Title for ITF output
+TITLE/VALUE/		! Title for corrected data image output
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADWORK/ERROR/*** Bad work space data type/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+TOOBAD/ERROR/*** Too many bad values given/

@@ -1,0 +1,15 @@
+INPUT/FRAME(R)/
+PARIN/FRAME(R)/
+DEVICE/VALUE/
+SIZE/VALUE/
+POINTS/VALUE/
+EPOCH/VALUE/
+EPOCHS/VALUE/
+FREQ/VALUE/GLOBAL_FREQ/
+VALUE/VALUE/
+NSAMP/VALUE/
+TITLE/VALUE/
+HELLIN/ERROR/*** Failed to obtain sensible input ***/
+HELLWRK/ERROR/*** Failed to obtain workspace ***/
+HELLDYN/ERROR/*** Failed to obtain workspace ***/
+HELLOUT/ERROR/*** Failed to obtain an output dataset ***/

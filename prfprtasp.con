@@ -1,0 +1,9 @@
+ !+
+ !     PRFPRTASP.
+ !
+ !     A C Davenhall./ROE/                                  1/8/82.
+ !-
+PROFILE/FRAME(R)/       ! Input profile.
+REPLY/VALUE/
+TITLE1/VALUE/           ! Title to appear on listing.
+SKY/VALUE/              ! Sky brightness (mag./sq.arcsec).

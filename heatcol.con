@@ -1,0 +1,7 @@
+ !+
+ !    HEATCOL.
+ !
+ !    A C Davenhall./ROE/                                    26/10/82.
+ !-
+COLTBL/FRAME(W)/    ! File to hold the colour table.
+REPLY/VALUE/

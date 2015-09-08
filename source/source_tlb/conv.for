@@ -1,0 +1,104 @@
+*
+*+ CONV   IMAGEIN  IMAGEPOINT  IMAGEOUT
+*
+*  IMAGEIN IS CONVOLVED WITH IMAGEPOINT AND THE RESULT
+*  RETURNED IN IMAGEOUT
+*
+*  ALL IMAGES ARE 2-D.
+*  IMAGEPOINT(PARAMETER CNVFN) MUST HAVE ODD DIMENSIONS.
+*
+
+*-
+      INTEGER IDIMNA(2),IDIMNB(2),IDIMNC(2)
+      EQUIVALENCE (IDIMNA(1),NXA), (IDIMNA(2),NYA)
+      EQUIVALENCE (IDIMNB(1),NXB), (IDIMNB(2),NYB)
+      EQUIVALENCE (IDIMNC(1),NXC), (IDIMNC(2),NYC)
+
+      INCLUDE 'INTERIM(FMTPAR)'
+
+      CALL RDIMAG('IN',FMT_R,2,IDIMNA,NDIMSA,IPA,JSTAT)
+      IF (NDIMSA.NE.2) GO TO 9010
+
+      CALL RDIMAG('CNVFN',FMT_R,2,IDIMNB,NDIMSB,IPB,JSTAT)
+      IF (NDIMSB.NE.2) GO TO 9010
+
+      NW=1
+      DO I=1,2
+         NA=IDIMNA(I)
+         IF (NA.LT.1) GO TO 9020
+         NB=IDIMNB(I)
+         IF (NB.LT.1) GO TO 9030
+         IF (MOD(NB,2).NE.1) GO TO 9040
+         M=NB-1
+         NW=NW*(NA+M)
+         NC=NA-M
+         IF (NC.LE.1) GO TO 9020
+         IDIMNC(I)=NC
+      END DO
+
+      CALL GETDYN('WK',FMT_R,NW,IPW,JSTAT)
+
+      CALL WRIMAG('OUT',FMT_R,IDIMNC,2,IPC,JSTAT)
+
+      CALL CONV(%VAL(IPA),NXA,NYA,
+     &           %VAL(IPB),NXB,NYB,
+     &           %VAL(IPW),
+     &           %VAL(IPC))
+      GO TO 9999
+
+ 9010 CONTINUE
+      CALL WRUSER('ONLY 2-D IMAGES PERMITTED!',JSTAT)
+      GO TO 9999
+
+ 9020 CONTINUE
+      CALL WRUSER('IN TOO SMALL!',JSTAT)
+      GO TO 9999
+
+ 9030 CONTINUE
+      CALL WRUSER('CNVFN TOO SMALL!',JSTAT)
+      GO TO 9999
+
+ 9040 CONTINUE
+      CALL WRUSER('CNVFN DIMNS MUST BE ODD!',JSTAT)
+
+ 9999 CONTINUE
+      CALL FRDATA(' ',JSTAT)
+      END
+      SUBROUTINE CONV(A,NXA,NYA,B,NXB,NYB,W,C)
+
+      REAL A(NXA,NYA),B(NXB,NYB),
+     &     W(NXA+NXB-1,NYA+NYB-1),C(NXA-NXB+1,NYA-NYB+1)
+
+*  ZERO WORK ARRAY
+      DO IYW=1,NYA+NYB-1
+         DO IXW=1,NXA+NXB-1
+            W(IXW,IYW)=0.0
+         END DO
+      END DO
+
+*  CONVOLVE
+      DO IYA=1,NYA
+         MY=IYA-1
+         DO IXA=1,NXA
+            MX=IXA-1
+            V=A(IXA,IYA)
+            DO IYB=1,NYB
+               IYW=IYB+MY
+               DO IXB=1,NXB
+                  IXW=IXB+MX
+                  W(IXW,IYW)=W(IXW,IYW)+V*B(IXB,IYB)
+               END DO
+            END DO
+         END DO
+      END DO
+
+*  COPY OUT VALID REGION
+      DO IYC=1,NYA-NYB+1
+         IYW=IYC+NYB-1
+         DO IXC=1,NXA-NXB+1
+            IXW=IXC+NXB-1
+            C(IXC,IYC)=W(IXW,IYW)
+         END DO
+      END DO
+
+      END

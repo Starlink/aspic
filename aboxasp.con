@@ -1,0 +1,8 @@
+ !+
+ !   ABOXASP.
+ !
+ !   A C Davenhall./ROE/                               17/8/82.
+ !-
+BOXFIL/FRAME(W)/        ! Output file holding the coords of the
+                        ! selected boxes.
+REPLY/VALUE/

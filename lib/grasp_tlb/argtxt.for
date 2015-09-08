@@ -1,0 +1,72 @@
+C
+C+
+C
+C	THIS PROGRAM DISPLAYS TEXT ON THE ARGS SCREEN.
+C     THE PARAMETERS ARE:
+C	   FCOL: THE COLOUR OF THE TEXT  W,R,G,B,Y,M OR C
+C	         WHERE:-    W  =  WHITE
+C		            R  =  RED
+C		            G  =  GREEN
+C		            B  =  BLUE
+C		            Y  =  YELLOW
+C		            M  =  MAGENTA
+C		            C  =  CYAN
+C
+C         KSIZE:   THE SIZE OF THE CHARACTERS. VALID RANGE IS 0-31
+C                 SIZE 0 DRAWS TEXT APPROX 10 ARGS UNITS HIGH
+C                 SIZE 31 DRAWS TEXT APPROX 250 ARGS UNITS HIGH
+C
+C      KX,KY      THE POSITION OF THE START OF THE TEXT
+C
+C         KDIR:      THE DIRECTION OF THE TEXT (HELP AT RUN TIME)
+C
+C         TEXT:     THE CHARACTERS TO BE DISPLAYED
+C
+C
+C	D.J.KING      -      17 MARCH 1981
+C
+C	AMENDED FOR NEW ARGSLIB  -  27 MAY 1981
+C
+C	AMENDED FOR OVERLAY PLANE  -  30 SEP 1981
+C
+C     AMENDED TO S/R BY A J PENNY  - 82 SEP 3
+C
+C-------------------------------------------------------------------
+C
+C
+C
+      SUBROUTINE ARGTXT(TEXT,FCOL,KSIZE,KX,KY,KDIR)
+C
+C
+C
+	CHARACTER*72 TEXT
+	CHARACTER*1 FCOL
+C
+C
+C
+      I = 72
+      DO WHILE (TEXT(I:I).EQ.' ')
+         I = I - 1
+      ENDDO
+      NCHARS = I
+C
+      CALL ARGS_RDIM(KXIC,KYIC,KXIS,KYIS,KXIPS,KYIPS,ISTAT)
+      KXS = KXIC - (KXIS/2) + KX - 1
+      KYS = KYIC - (KYIS/2) + KY - 1
+      CALL ARGS_S1('XMA',KXS)
+      CALL ARGS_S1('YMA',KYS)
+      CALL ARGS_S1('SSB',13)
+      CALL ARGS_S1('SSZ',KSIZE)
+      CALL ARGS_S1('SDD',KDIR)
+      DO I=1,NCHARS
+         CALL ARGS_S1('JSI',ICHAR(TEXT(I:I)))
+      ENDDO
+      CALL ARGS_S1('SSZ',0)
+      CALL SRSEND
+C
+C
+C
+	END
+
+
+

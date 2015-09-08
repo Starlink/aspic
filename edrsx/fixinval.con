@@ -1,0 +1,26 @@
+!   Connection file for program FIXINVAL
+!
+INPUT/FRAME(R)/			! Input image
+OUTPUT/FRAME(W)/		! Output image
+VALUE/VALUE/			! Value with which to replace invalid
+				! pixels
+TITLE/VALUE/			! Title for output
+!
+!   Error parameters specific to 
+!
+!none
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+BADVALUE/ERROR/*** Invalid numerical parameter/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+TOOBAD/ERROR/*** Too many bad values given/

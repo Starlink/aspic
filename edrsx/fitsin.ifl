@@ -1,0 +1,123 @@
+## FITSIN - Reads a FITS tape into a series of NDFs
+
+interface FITSIN
+  
+    program 'FITSIN'
+
+    parameter     MTDECK
+      position    1
+      keyword     'MTDECK'
+      ptype       'DEVICE'
+      type        'TAPE'
+      ppath       'CURRENT,DEFAULT'
+      prompt      'Tape deck'
+      help        'Device name of the tape deck, e.g. MTA0'
+      default     MTA0
+   endparameter
+
+   parameter      FILES
+      position    2
+      keyword     'FILES'
+      type        '_CHAR'
+      vpath       'PROMPT'
+      prompt      'Give a list of the numbers of the files to be processed'
+      help        'Example: [1,3,7-9,23] would extract files 1,3,7,8,9,23.  Brackets are needed if there is >1 item in the list'
+   endparameter
+
+   parameter      OUTPUT
+      position    3
+      keyword     'OUTPUT'
+      type        'IMAGE'
+      access      'WRITE'
+      vpath       'PROMPT'
+      association '->GLOBAL.DATA_ARRAY'
+      prompt      'Output image'
+      help        'Name given to the NDF data structure to contain the data array just read from the tape'
+   endparameter
+
+   parameter      LABEL
+      position    4
+      keyword     'LABEL'
+      type        '_LOGICAL'
+      vpath       'PROMPT'
+      prompt      'Is the tape labelled?'
+      help        'Labelled tapes have extra file marks between files'
+      default     FALSE
+   endparameter
+
+   parameter      AUTO
+      position    5
+      keyword     'AUTO'
+      type        '_LOGICAL'
+      vpath       'DEFAULT'
+      prompt      'Automatic mode?'
+      help        'Automatic mode means that NDF filenames will be generated and a global data-conversion switch is available'
+      default     FALSE
+   endparameter
+
+   parameter      FMTCNV
+      position    6
+      keyword     'FMTCNV'
+      type        '_LOGICAL'
+      vpath       'PROMPT'
+      prompt      'Convert data?'
+      help        'Do you want to convert the data array to floating-point?. In automatic mode this applies to all the data arrays'
+      default     TRUE
+   endparameter
+
+   parameter      PREFIX
+      position    7
+      keyword     'PREFIX'
+      type        'LITERAL'
+      vpath       'PROMPT'
+      ppath       'CURRENT,DEFAULT'
+      prompt      'Prefix for the NDF file names?'
+      help        'The prefix is used in automatic mode to generate NDF filenames of the form prefix//tape-file-number, e.g. CCD126'
+      default     'FITS'
+   endparameter
+
+   parameter      LOGHDR
+      position    8
+      keyword     'LOGHDR'
+      type        '_LOGICAL'
+      vpath       'DEFAULT'
+      prompt      'Do you want a log of the FITS headers?'
+      help        'The FITS header cards may be written to an ASCII file'
+      default     FALSE
+   endparameter
+
+   parameter      LOGFILE
+      position    9
+      keyword     'LOGFILE'
+      type        '_CHAR'
+      access      'READ'
+      vpath       'PROMPT'
+      ppath       'DEFAULT'
+      prompt      'Filename to store FITS headers'
+      default     FITSIN.LOG
+      help        'Name of the ASCII file to be used for output of the FITS headers'
+   endparameter
+
+   parameter      NOCON
+      keyword     'NOCON'
+      type        '_LOGICAL'
+      vpath       'DEFAULT'
+      prompt      'No data conversion for any data array?'
+      help        'If all the data arrays in the files to be read from the FITS tape do not require conversion, set this to true'
+      default     FALSE
+   endparameter
+
+   parameter      MORE
+      keyword     'MORE'
+      type        '_LOGICAL'
+      vpath       'PROMPT'
+      prompt      'Any more files?'
+      help        'Do you wish to read more files from the tape?'
+      default     FALSE
+   endparameter
+
+   message        IPAC_TAPE
+      text        '*** This is a non-standard IPAC file'
+   endmessage
+
+endinterface

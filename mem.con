@@ -1,0 +1,14 @@
+ARGS/VALUE/
+DATA/FRAME(R)/
+DEFAULT/VALUE/
+ERRFILE/FRAME(R)/
+NITER/VALUE/
+NOISE/VALUE/
+OUTPUT/FRAME(W)/
+PSF/FRAME(R)/
+START/FRAME(R)/
+WKFILE/VALUE/
+DIMINV/ERROR/ Image has wrong dimensions
+FRMBAD/ERROR/ Error accessing image
+TOOBIG/ERROR/ No dimension larger than 4096 allowed
+TOOSMALL/ERROR/ Image must be at least 4096 pixels

@@ -1,0 +1,8 @@
+INPUT/FRAME(R)/
+PARIN/FRAME(R)/
+FREQ/VALUE/GLOBAL_FREQ/
+VALUE/VALUE/
+EPOCH/VALUE/
+PAROUT/FRAME(W)/
+ERRIN/ERROR/*** Error obtaining input dataset ***/
+ERRDYN/ERROR/*** Error obtaining workspace ***/

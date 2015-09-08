@@ -1,0 +1,55 @@
+!
+! Creates a mask image containing one's in the source area, a constant
+! negative value in the background area, and invalid pixels everywhere
+! else. The background value is chosen so that the total valid data sum
+! is zero.
+!
+!----------------------------------------------------------------------.
+IF P1.EQS."" THEN INQUIRE P1 "MEM image"
+IF F$SEARCH("''P1'.BDF").EQS."" THEN GOTO NOFILE
+IF P2.EQS."" THEN INQUIRE P2 "Output mask image"
+IF P2.EQS."" THEN EXIT
+!
+ARGPIC INPUT='P1' PCRANGE=30,99 DRANGE=
+!
+START:
+DRAWSCAN IMAGE='P1' SCAN=
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " Use the cursor to outline the source area (instructions follow shortly)"
+XYCUR ILEVEL=1 COLOUR=RED PLOT=POLY OUTPUT='P1'P1B.TMP
+!
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " Now use the cursor to outline the background area "
+XYCUR ILEVEL=1 COLOUR=BLUE PLOT=POLY OUTPUT='P1'P2B.TMP INFO=FALSE
+!
+MATHS FORMULA=0*IA-1.0 IA='P1' OUTPUT='P1'MONE.TMP TITLE=
+!
+SEGMENT AIMAGE='P1'MONE.TMP BIMAGE= POLY1='P1'P2B.TMP OUTPUT='P1'M1.TMP TITLE=
+!
+ARITH IMAGE='P1'MONE.TMP FUNCTION=* CONSTANT=-1.0
+SEGMENT AIMAGE='P1'MONE.TMP BIMAGE='P1'M1.TMP POLY1='P1'P1B.TMP OUTPUT='P1'M2.TMP TITLE=
+!
+DATARANGE ILEVEL=1 INPUT='P1'M2.TMP
+LET MATHS_A=DATARANGE_NVAL
+LET MATHS_B=DATARANGE_DATASUM
+MATHS FORMULA=(A*IA-B)%(A-B) IA='P1'M2.TMP OUTPUT='P2' TITLE=
+!
+DATARANGE INPUT='P2' ILEVEL=1
+WRITE SYS$OUTPUT ">>> Finished"
+WRITE SYS$OUTPUT "    Total valid data sum of mask ",P2," is ",F$TRNLNM("DATARANGE_DATASUM")
+!
+MATHS FORMULA=0.5*(A+B) NX=1 NY=1 OUTPUT= TITLE= 
+WRITE SYS$OUTPUT "    Source area covers ",F$TRNLNM("MATHS_VALUE")," pixels"
+WRDSCR FRAME='P2' LOOP=NO NAME=SOURCE_PIXELS VALUE=MATHS_VALUE
+!
+WRITE SYS$OUTPUT " "
+INQUIRE ANS "Produce another mask image? (Y/N)"
+IF ANS.NES."N" THEN INQUIRE P2 "Output mask image"
+IF ANS.NES."N" THEN GOTO START
+DEL 'P1'P1B.TMP;*,'P1'P2B.TMP;*
+DEL 'P1'MONE.TMP;*,'P1'M1.TMP;*,'P1'M2.TMP;*
+EXIT
+!
+NOFILE:
+IF P1.NES."" THEN WRITE SYS$OUTPUT "*** File not found: ",P1,".BDF"
+EXIT

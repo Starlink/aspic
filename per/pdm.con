@@ -1,0 +1,10 @@
+INPUT/FRAME(R)/
+MODE/VALUE/
+ERROR/VALUE/
+DEVICE/VALUE/
+SIZE/VALUE/
+FREQ/VALUE/GLOBAL_FREQ/
+RANGE/VALUE/
+NUMFREQ/VALUE/
+ERRIN/ERROR/*** Error obtaining input dataset ***/
+ERRDYN/ERROR/*** Error obtaining working space ***/

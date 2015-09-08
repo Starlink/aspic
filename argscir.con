@@ -1,0 +1,8 @@
+!        ARGSCIR           D. TUDHOPE/ROE
+CX/VALUE/           ! REAL   cursor x-coord in user coords
+CY/ VALUE/          ! REAL   cursor y-coord ...........
+DIAM/VALUE/         ! REAL   diameter of circle in user coords
+IMAGEN/VALUE/       ! INTEGER data base number of image referred to by CX,CY
+NOPICT/ERROR/ERROR - 0 ON ARGS
+MISSED/ERROR/ ERROR - CURSOR NOT ON IMAGE OR BUTTON 4 HIT
+BADWRITE/ERROR/ ERROR IN WRITING TO ENVIRONMENT

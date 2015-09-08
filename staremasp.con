@@ -1,0 +1,9 @@
+ !+
+ !   STAREMASP.
+ !
+ !   A C Davenhall./ROE/                                   25/9/82.
+ !-
+IMAGEIN/FRAME(R)/   ! Input image frame.
+IMAGEOUT/FRAME(W)/  ! Output  "     "  .
+REPLY/VALUE/
+COMAND/VALUE/       ! STAREMASP command.

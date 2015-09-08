@@ -1,0 +1,6 @@
+!	SETMAG		D. TUDHOPE/ROE/Sept 1982
+!	part of IAM suite
+SKYMAG/VALUE/            !   (R) sky background in one pixel
+SCLSTAT/VALUE/1          !    (I) program status
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT

@@ -1,0 +1,7 @@
+INPUT/FRAME(R)/
+M/VALUE/
+ITERS/VALUE/500/
+AGAIN/VALUE/
+OUTPUT/FRAME(W)/
+ERRWRK/ERROR/*** Error obtaining work space ***/
+ERROUT/ERROR/*** Failed to obtain an output dataset ***/

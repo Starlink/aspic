@@ -1,0 +1,47 @@
+      SUBROUTINE LBGONE(STR)
+*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*PURPOSE
+*	TO REMOVE LEADING BLANKS FROM A CHARACTER STRING
+*
+*METHOD
+*	FIND THE FIRST NON-BLANK CHARACTER, THEN SHIFT THE REMAINING
+*	CHARACTERS LEFT AND PAD THE END WITH BLANKS
+*
+*ARGUMENTS
+*	STR (IN/OUT)
+*	CHARACTER*(*)
+*		THE CHARACTER STRING
+*
+*CALLS
+*	NONE
+*
+*WRITTEN BY
+*	R.F. WARREN-SMITH
+*-----------------------------------------------------------------------
+C
+C
+      CHARACTER STR*(*)
+C
+C SCAN STRING, LOOKING FOR FIRST NON-BLANK CHARACTER
+C
+      DO 1 I=1,LEN(STR)
+C
+C IF FIRST NON-BLANK IS NOT THE FIRST CHARACTER, SHIFT REMAINING
+C CHARACTERS TO LEFT
+C
+        IF(STR(I:I).NE.' ') THEN
+          IF(I.GT.1) THEN
+            DO 2 J=1,LEN(STR)+1-I
+              NEWCHR=J+I-1
+              STR(J:J)=STR(NEWCHR:NEWCHR)
+    2       CONTINUE
+C
+C PAD END OF STRING WITH BLANKS
+C
+            STR(J:)=' '
+          ENDIF
+          GO TO 3
+        ENDIF
+    1 CONTINUE
+    3 RETURN
+      END

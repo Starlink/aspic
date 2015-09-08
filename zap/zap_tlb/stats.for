@@ -1,0 +1,54 @@
+      SUBROUTINE STATS(PIC,NELS,RIT,RIM,RIMIN,RIMAX,RMS,STDEV)
+*
+*  ESTABLISH TOTAL, MEAN, MIN, MAX PIXEL VALUE
+*
+*  GIVEN:
+*     PIC,NELS              PIXEL ARRAY, NUMBER OF PIXELS
+*
+*  RETURNED:
+*     RIT,RIM,RIMIN,RIMAX   TOTAL, MEAN, MIN, MAX
+*
+ 
+      INTEGER NELS
+      REAL PIC(NELS),RIT,RIM,RIMIN,RIMAX
+      LOGICAL RMS
+ 
+      DOUBLE PRECISION DWK(0:999),DIT
+ 
+      DO I=0,999
+         DWK(I)=0D0
+      END DO
+ 
+      RIMIN=PIC(1)
+      RIMAX=RIMIN
+ 
+      DO I=1,NELS
+         V=PIC(I)
+         RIMIN=MIN(RIMIN,V)
+         RIMAX=MAX(RIMAX,V)
+         IM=MOD(I,1000)
+         DWK(IM)=DWK(IM)+DBLE(V)
+      END DO
+ 
+      DIT=0D0
+ 
+      DO I=0,999
+         DIT=DIT+DWK(I)
+      END DO
+ 
+      RIT=REAL(DIT)
+ 
+      RIM=RIT/REAL(NELS)
+ 
+*
+*  IF REQUESTED CALCULATE STANDARD DEVIATION
+*
+      IF(RMS)  THEN
+         STDEV = 0.0
+         DO I=1,NELS
+            STDEV = STDEV + (PIC(I)-RIM)**2
+         ENDDO
+         STDEV = SQRT(STDEV/REAL(NELS))
+      ENDIF
+ 
+      END

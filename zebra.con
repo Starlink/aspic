@@ -1,0 +1,8 @@
+ !+
+ !    ZEBRA.
+ !
+ !    A C Davenhall./ROE/                                    26/10/82.
+ !-
+COLTBL/FRAME(W)/    ! File to hold the colour table.
+NUMCON/VALUE/       ! No. of contours required.
+REPLY/VALUE/

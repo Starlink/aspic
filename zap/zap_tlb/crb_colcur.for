@@ -1,0 +1,10 @@
+	SUBROUTINE CRB_COLCURS(COLCURS)
+	CHARACTER*1 COLCURS
+	WRITE(*,100)
+100   FORMAT(' Choose a colour for the cursor:',/,
+     1' W, R, G, B, Y, C or M')
+	READ(5,101) COLCURS
+101   FORMAT(A1)
+	IF(COLCURS.EQ.' ') COLCURS='W'
+	RETURN
+	END

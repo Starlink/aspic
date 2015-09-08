@@ -1,0 +1,4 @@
+FROM/FRAME(R)/
+TO/FRAME(R)/
+DIMERR/ERROR/*** Dimensions do not agree ***/
+IMERR/ERROR/*** Error getting frame ***/

@@ -1,0 +1,12 @@
+!+
+!
+!    CURFIT
+!
+!    D.W.T.Baines/ROE/April 1983
+!
+!-
+MODE/VALUE/          ! Number of parameters to be fitted
+IAREA/VALUE/         ! Size of the area over which the fit is performed
+EXP/VALUE/           ! Saturation exponent initial/fixed value
+DSAT/VALUE/          ! Saturation density initial/fixed value
+INPIC1/FRAME(R)/     ! Input image of data to be measured

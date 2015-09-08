@@ -1,0 +1,8 @@
+!+
+!     IAMEDRS.
+!
+!     A C Davenhall./ROE/                                   6/10/83.
+!-
+REPLY/VALUE/
+IAMFRAME/FRAME(R)/     ! Input frame in ASPIC IAM format.
+EDRSLST/FRAME(W)/      ! Output frame in EDRS XYlist format.

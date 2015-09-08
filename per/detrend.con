@@ -1,0 +1,7 @@
+INPUT/FRAME(R)/
+OUTPUT/FRAME(W)/
+DEGREE/VALUE/
+HELLIN/ERROR/*** Failed to obtain input dataset ***/
+HELLOUT/ERROR/*** Failed to obtain output dataset ***/
+ERRDYN/ERROR/*** Error obtaining workspace ***/
+HELLDEG/ERROR/*** Bad value for degree ***/

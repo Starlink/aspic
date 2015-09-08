@@ -1,0 +1,20 @@
+INPUT/FRAME(R)/
+WKSTN/VALUE/
+WHOLE/VALUE/
+IVALUES/VALUE/
+JVALUES/VALUE/
+SIZE/VALUE/
+FRAME/VALUE/
+MAXINF/VALUE/
+BIAS/VALUE/
+REVERSE/VALUE/
+WHITE/VALUE/
+BLACK/VALUE/
+LOG/VALUE/
+LABEL/VALUE/
+OUTPUT/FRAME(W)/
+BADSIZE/ERROR/ Invalid size factor
+BADDAT/ERROR/ Input two integers separated by a comma
+BADELE/ERROR/ All array elements have the same value
+BADROW/ERROR/ Invalid row limits
+BADCOL/ERROR/ Invalid column limits

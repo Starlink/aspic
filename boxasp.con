@@ -1,0 +1,10 @@
+ !+
+ !   BOXASPP.
+ !
+ !   A C Davenhall./ROE/                            13/9/82.
+ !-
+XBASE/VALUE/   ! X coord. of bottom left hand corner.
+YBASE/VALUE/   ! Y   "  . "    "     "    "     "   .
+XTOP/VALUE/    ! X coord. of upper right hand corner.
+YTOP/VALUE/    ! Y   "  . "    "     "    "     "   .
+REPLY/VALUE/

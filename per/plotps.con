@@ -1,0 +1,12 @@
+POWER/FRAME(R)/
+FREQ/VALUE/GLOBAL_FREQ/
+FREQLIMS/VALUE/
+YLIMITS/VALUE/
+WINDOW/FRAME(R)/
+DEVICE/VALUE/
+SIZE/VALUE/
+FREQCEN/VALUE/
+TITLE/VALUE/
+BADDATA/ERROR/*** Failed to obtain dataset ***/
+HELLDEV/ERROR/*** Failed to make sense of plotting device ***/
+HELLDIM/ERROR/*** DIMdow frequencies not same as power spectrum ***/

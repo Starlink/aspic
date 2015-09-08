@@ -1,0 +1,10 @@
+	SUBROUTINE EDPRFL (MSIZE,PARMFIL)
+C+
+C	 Interim subroutine for editing the parameter file.
+C
+C	 A C D 12/10/81.
+C-
+	INTEGER MSIZE
+	REAL PARMFIL(MSIZE)
+	CALL CRPRFL (MSIZE,PARMFIL)
+	END

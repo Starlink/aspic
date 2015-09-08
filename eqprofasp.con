@@ -1,0 +1,22 @@
+ !+
+ !     EQPROFASP.
+ !
+ !     A C Davenhall./ROE/                        23/7/82.
+ !-
+INPIC1/FRAME(R)/         ! Image frame from which profile is computed.
+REPLY/VALUE/
+ICST/VALUE/              ! Sample spacing, columns (micron).
+IRST/VALUE/              ! Sample spacing, rows    (micron).
+PLTSCL/VALUE/            ! Plate scale (arcsec/mm).
+COMMAND/VALUE/           ! EQPROFASP command.
+TITLE/VALUE/             ! Title to appear on printed output.
+FILEIN/VALUE/            ! VMS filename; input equivalent profile.
+LOGMIN/VALUE/            ! Min. Log I in eq. prof.
+DELOGI/VALUE/            ! increment in Log I in eq. prof.
+NLEVEL/VALUE/            ! Max. no. of levels in eq. prof.
+EQPROF/FRAME(W)/         ! Output eq. prof. (Starlink image).
+COORD/VALUE/             ! Coordinate for exclusion box.
+SKY/VALUE/               ! Sky brightness (mag./sq.arcsec).
+MINBOX/VALUE/            ! No. of smallest aperture to be used in
+                         ! computing the sky corrected equivalent
+                         ! profile.

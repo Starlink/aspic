@@ -1,0 +1,86 @@
+!   Connection file for program CRDDSAMPLE
+!
+BASELINE/VALUE/CONSTANT/! The type of base line to add to the input CRDD
+DATATYPE/VALUE/SURVEY/  ! Type of CRDD to be used: AO or SURVEY
+DEFAULT/VALUE/0.0/	! Value of default flat image to use
+DEVICE/VALUE/NONE/	! Graphics device
+FILTER/VALUE/15/	! The size of the box filter (in samples) used 
+			! to reject sources from the base line estimation
+ILEVEL/VALUE/2/		! Amount of info to display on the terminal screen
+IMAGE/FRAME(R)/		! The input image
+LOOP/VALUE/NO/          ! If YES then use looping parameters
+MODE/VALUE/CORRECTED/   ! Type of output CRDD required; SAMPLED or CORRECTED
+PLOT/VALUE/             ! If YES then the next plot is produced
+SOLANG/VALUE/		! The source for detector solid angle values
+IN/FRAME(R)/		! Looping input CRDD file
+IN1/FRAME(R)/		! The first (non-looping) input CRDD file
+IN2/FRAME(R)//		! The second (non-looping) input CRDD file
+IN3/FRAME(R)//		! (etc)
+IN4/FRAME(R)//
+IN5/FRAME(R)//
+IN6/FRAME(R)//
+IN7/FRAME(R)//
+IN8/FRAME(R)//
+IN9/FRAME(R)//
+IN10/FRAME(R)//
+IN11/FRAME(R)//
+IN12/FRAME(R)//
+IN13/FRAME(R)//
+IN14/FRAME(R)//
+IN15/FRAME(R)//
+IN16/FRAME(R)//
+IN17/FRAME(R)//
+IN18/FRAME(R)//
+IN19/FRAME(R)//
+IN20/FRAME(R)//
+OUT/FRAME(W)/		! Looping output CRDD file
+OUT1/FRAME(W)/		! The first (non-looping) output CRDD file
+OUT2/FRAME(W)/		! The second (non-looping) output CRDD file
+OUT3/FRAME(W)/		! (etc)
+OUT4/FRAME(W)/
+OUT5/FRAME(W)/
+OUT6/FRAME(W)/
+OUT7/FRAME(W)/
+OUT8/FRAME(W)/
+OUT9/FRAME(W)/
+OUT10/FRAME(W)/
+OUT11/FRAME(W)/
+OUT12/FRAME(W)/
+OUT13/FRAME(W)/
+OUT14/FRAME(W)/
+OUT15/FRAME(W)/
+OUT16/FRAME(W)/
+OUT17/FRAME(W)/
+OUT18/FRAME(W)/
+OUT19/FRAME(W)/
+OUT20/FRAME(W)/
+!   Error parameters specific to CRDDSAMPLE
+!
+ALLREJ/ERROR/*** All the data has been rejected/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADSPL/ERROR/*** PROGRAMMING ERROR: E02BBF argument X out of bounds./
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+BSSOVFLOW/ERROR/*** No room for any more boresight data/
+DESCFULL/ERROR/*** No room for any more descriptors/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+TOOBAD/ERROR/*** Too many bad values given/

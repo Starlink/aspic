@@ -1,0 +1,9 @@
+!+
+!   TARGET.
+!
+!   A C Davenhall./ROE/                                       8/2/84.
+!-
+CATAL/FRAME(R)/        ! File holding "star catalogue".
+THRESH/VALUE/          ! Plotting threshold (magnitudes).
+PLANE/VALUE/9          ! Args overlay plane for plotting.
+REPLY/VALUE/

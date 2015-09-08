@@ -1,0 +1,36 @@
+!   Connection file for program CONVOLVE
+!
+IMAGE/FRAME(R)/			! The input data image
+PSF/FRAME(R)/			! The PSF image with which INPUT is to
+				! be convolved.
+TRCOEFFS/VALUE//		! The transformation co-efficients which
+				! describe the orientation and centre of
+				! the PSF image.
+OUTPUT/FRAME(W)/		! The output data image
+ILEVEL/VALUE/2/			! User information level
+MINPIX/VALUE//			! Min. no. of pixels for a valid o/p pix
+TITLE/VALUE/			! Title for output
+!
+!   Error parameters specific to CONVOLVE
+!
+NOREBIN/ERROR/*** PSF could not be re-bined with given transformation/
+SINGULAR/ERROR/*** Transformation cannot be inverted/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets....
+!
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONEVAL/ERROR/*** Output would have no valid pixels/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+PSFCEN/ERROR/*** PSF centre not within PSF image/
+TOOBAD/ERROR/*** Too many bad values given/
+ZEROFILT/ERROR/*** WARNING: The PSF image has zero total data sum/

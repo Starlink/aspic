@@ -1,0 +1,10 @@
+ !+
+ !   COLSLICE.
+ !
+ !   A C Davenhall./ROE/                                        25/2/83.
+ !-
+COLTBL/FRAME(W)/       ! Colour table generated.
+REPLY/VALUE/
+RED/VALUE/             ! Intensity in red gun.
+BLUE/VALUE/            !     "     "  blue " .
+GREEN/VALUE/           !     "     "  green" .

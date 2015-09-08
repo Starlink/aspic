@@ -1,0 +1,10 @@
+IMAGE/FRAME(R)/
+FRINGES/FRAME(R)/
+OUTPUT/FRAME(W)/
+FACTOR/VALUE/0.0/
+BESTFAC/VALUE/
+ERR0/ERROR/Failed to open output frame
+ERR1/ERROR/Location of selected region error
+ERR2/ERROR/Axes of IMAGE and FRAME do not agree
+ERR3/ERROR/Failed to open FRINGE frame
+ERR4/ERROR/Failed to open IMAGE frame

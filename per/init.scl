@@ -1,0 +1,8 @@
+$ WRITE SYS$OUTPUT " "
+$WRITE SYS$OUTPUT "  +   +   +   +   +   +   +   +   +   +   +"
+$WRITE SYS$OUTPUT " + + + + + Period+Finding+Package+ + + + + +"
+$WRITE SYS$OUTPUT "+   +   +   +   +   +   +   +   +   +   +   +"
+$ WRITE SYS$OUTPUT " "
+$WRITE SYS$OUTPUT "Type HELP OVER for an overview of the package."
+$ WRITE SYS$OUTPUT " "
+  let _FREQ=YES

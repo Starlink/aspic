@@ -1,0 +1,41 @@
+      SUBROUTINE IMGCPY(IA,NPIX,NLINES,IB)
+*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*PURPOSE
+*	TO COPY ONE IMAGE ARRAY TO ANOTHER
+*
+*METHOD
+*	STRAIGHTFORWARD ASSIGNMENT
+*
+*ARGUMENTS
+*	IA (IN)
+*	INTEGER*2(NPIX,NLINES)
+*		INPUT IMAGE ARRAY
+*	NPIX,NLINES (IN)
+*	INTEGER
+*		DIMENSIONS OF IMAGES
+*	IB (OUT)
+*	INTEGER*2(NPIX,NLINES)
+*		OUTPUT IMAGE ARRAY
+*
+*CALLS
+*	NONE
+*
+*NOTES
+*	USES INTEGER*2 ARRAYS
+*
+*WRITTEN BY
+*	R.F. WARREN-SMITH
+*-----------------------------------------------------------------------
+C
+C
+      INTEGER*2 IA(NPIX,NLINES),IB(NPIX,NLINES)
+C
+C SCAN IMAGE, COPYING IA TO IB
+C
+      DO 2 J=1,NLINES
+	DO 1 I=1,NPIX
+	  IB(I,J)=IA(I,J)
+    1   CONTINUE
+    2 CONTINUE
+      RETURN
+      END

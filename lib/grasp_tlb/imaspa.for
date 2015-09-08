@@ -1,0 +1,109 @@
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C          **************
+C          *            *
+C          * S/R IMASPA *
+C          *            *
+C          **************
+C
+C
+*PURPOSE
+*     TO CALC AVERAGE AND STD DEV OF VALID PIXELS IN PART OF AN IMAGE
+*     USING ONLY THOSE WITHIN 2.5STD OF THE MEAN FOUND BY THREE
+*     ITERATIONS
+*     RETURNS VALUES OF ZERO IF CANT DO CALC
+*
+*METHOD
+*	STRAIGHTFORWARD ADDITION
+*
+*ARGUMENTS
+*	IA (IN)
+*	INTEGER*2(NPIX,NLINES)
+*		INPUT IMAGE
+*	NPIX,NLINES (IN)
+*	INTEGER
+*		DIMENSIONS OF IMAGE
+*     NXA,NXB,NYA,NYB (IN)
+*     INTEGER
+*             X AND Y LIMITS IN IMAGE DEFING AREA USED
+*	INVAL (IN)
+*	INTEGER
+*		INVALID PIXEL FLAG FOR IA
+*     AV (OUT)
+*     REAL
+*             AVERAGE VALUE OF PIXELS USED
+*     STD (OUT)
+*	REAL
+*             STD DEVIATION OF PIXEL VALUES
+*	NPT (OUT)
+*	INTEGER
+*		NUMBER OF PIXELS USED
+*
+*CALLS
+*	NONE
+*
+*NOTES
+*	USES INTEGER*2 ARRAYS
+*
+*WRITTEN BY
+*     A.J.PENNY
+* ----------------------------------------------------------------------
+C
+C
+C
+      SUBROUTINE IMASPA(IA,NPIX,NLINES,NXA,NXB,NYA,NYB,INVAL,AV,STD,NPT)
+C
+C
+      INTEGER*2 IA(NPIX,NLINES)
+      DOUBLE PRECISION SUM,SUMSQ
+C
+C DEFAULT VALUES IF NO CALC
+      AV = 0.0
+      STD = 0.0
+C
+      DO 3 K = 1,3
+C INITIALISE SUM AND SUM OF SQUARES AND PIXELS USED COUNT
+         SUM = 0.0
+         SUMSQ = 0.0
+         NPT = 0
+C SCAN IMAGE
+         DO 2 J = NYA,NYB
+            DO 1 I = NXA,NXB
+               L = IA(I,J)
+               VAL = FLOAT(L)
+C IF INVALID PIXEL,IGNORE
+               IF(L.NE.INVAL) THEN
+                  IF(K.EQ.1) THEN
+C IF FIRST ITERATION,USE ALL VALID PIXS
+                     SUM = SUM + DBLE(VAL)
+                     SUMSQ = SUMSQ + DBLE(VAL)*DBLE(VAL)
+                     NPT = NPT + 1
+                  ELSE
+C IF NOT FIRST,ONLY USE PIXS NEAR MEAN
+                     IF(L.GE.MIN.AND.L.LE.MAX) THEN
+                        SUM = SUM + DBLE(VAL)
+                        SUMSQ = SUMSQ + DBLE(VAL)*DBLE(VAL)
+                        NPT = NPT + 1
+                     ENDIF
+                  ENDIF
+               ENDIF
+    1       CONTINUE
+    2    CONTINUE
+C CALC MEAN, STD DEV AND LIMITS FOR NEXT ITERATION
+         IF(NPT.GT.0) AV = SUM/DBLE(NPT)
+         IF(NPT.GT.1) THEN
+            STD=(SUMSQ-SUM*SUM/DBLE(NPT))/DBLE(NPT-1)
+            IF (STD.LT.1.0E-10) STD = 1.0E-10
+            STD = SQRT(STD)
+         ENDIF
+         MAX = IFIX(AV+3.0*STD)
+         MIN = IFIX(AV-3.0*STD)
+C IF ONLY 1 OR TWO POINTS OK,EXIT FROM ITERATION
+         IF(NPT.LE.2)GO TO 4
+    3 CONTINUE
+    4 CONTINUE
+C
+      END
+
+

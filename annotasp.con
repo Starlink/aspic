@@ -1,0 +1,16 @@
+ !+
+ !    ANNOTASP.
+ !
+ !    A C Davenhall./ROE/                               28/7/82.
+ !-
+REPLY/VALUE/
+COMMAND/VALUE/         ! ANNOTASP Command.
+STRING/VALUE/          ! Character string for display on screen.
+PIXSIZ/VALUE/          ! Pixel size in astronomical units.
+BARLEN/VALUE/          ! Length of the bar (astronomical units).
+XPOS/VALUE/            ! X coords. of mid point of the bar.
+YPOS/VALUE/            ! Y   "   . "   "    "   "   "   " .
+THETA/VALUE/           ! Angle for arrow.
+ARRLEN/VALUE/          ! Length of arrow.
+PLANE/VALUE/           ! Args overlay plane to be used for graphics.
+SIZCHA/VALUE/          ! Size of characters to be output to Args.

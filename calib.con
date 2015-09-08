@@ -1,0 +1,7 @@
+!	CALIB		D. TUDHOPE/ROE/NOV 1982
+!	part of CALIBRATION suite
+INPIC1/FRAME(R)/		! (RA) input image
+OUTPIC1/FRAME(W)/		! (RA) output image
+LOOKUP/FRAME(R)/	        ! (RA) intensity lookup table
+REPLY/VALUE/			! (CH) title
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT - lookup not defined ?

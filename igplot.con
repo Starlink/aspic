@@ -1,0 +1,5 @@
+!	IGPLOT		D. TUDHOPE/ROE/Sept 1982
+!		part of IAM suite
+PARAMS/FRAME(R)/         !   (RA) input array of image parameters
+REPLY/VALUE/             !   (CH) quadrant on ARGS
+MISREAD/ERROR/ERROR - NO PARAMS FILE ?

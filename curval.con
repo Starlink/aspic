@@ -1,0 +1,10 @@
+ !+
+ !    CURVAL.
+ !
+ !    A C Davenhall./ROE/                             28/10/82.
+ !-
+ARRAY/FRAME(R)/        ! Required array.
+REPLY/VALUE/
+XPOS/VALUE/           ! X coord. of pixel.
+YPOS/VALUE/           ! Y   "  . "    "  .
+VALUE/VALUE/          ! Value of pixel.

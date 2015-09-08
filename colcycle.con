@@ -1,0 +1,9 @@
+ !+
+ !   COLCYCLE.
+ !
+ !   A C Davenhall./ROE/                                   26/10/82.
+ !-
+INCOL/FRAME(R)/       ! Input colour table.
+OUTCOL/FRAME(W)/      ! Output colour table.
+CYCLE/VALUE/          ! No. of cycles required in the output table.
+REPLY/VALUE/

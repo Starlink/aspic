@@ -1,0 +1,11 @@
+ !+
+ !      PRIAXEASP.
+ !
+ !      A C Davenhall./ROE/                           31/7/82.
+ !-
+INPIC1/FRAME(R)/      ! Input image.
+PROFILE/FRAME(W)/     ! An extracted profile.
+REPLY/VALUE/
+COMMAND/VALUE/        ! PRIAXEASP command.
+PIXSIZ/VALUE/         ! Pixel size.
+ARM/VALUE/            ! Number of axis (1-4).

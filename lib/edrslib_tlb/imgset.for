@@ -1,0 +1,42 @@
+      SUBROUTINE IMGSET(IA,NPIX,NLINES,IVAL)
+*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*PURPOSE
+*	TO SET AN IMAGE ARRAY TO A CONSTANT VALUE
+*
+*METHOD
+*	STRAIGHTFORWARD ASSIGNMENT
+*
+*ARGUMENTS
+*	IA (OUT)
+*	INTEGER*2(NPIX,NLINES)
+*		IMAGE ARRAY
+*	NPIX,NLINES (IN)
+*	INTEGER
+*		DIMENSIONS OF IA
+*	IVAL (IN)
+*	INTEGER
+*		VALUE TO BE PUT IN IA
+*
+*CALLS
+*	NONE
+*
+*NOTES
+*	USES INTEGER*2 ARRAYS
+*
+*WRITTEN BY
+*	R.F. WARREN-SMITH
+*-----------------------------------------------------------------------
+C
+C
+      INTEGER*2 IA(NPIX,NLINES),I2VAL
+C
+C SCAN IMAGE, SETTING EACH PIXEL TO IVAL
+C
+      I2VAL=IVAL
+      DO 2 J=1,NLINES
+	DO 1 I=1,NPIX
+	  IA(I,J)=I2VAL
+    1   CONTINUE
+    2 CONTINUE
+      RETURN
+      END

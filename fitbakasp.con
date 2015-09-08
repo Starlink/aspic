@@ -1,0 +1,15 @@
+ !+
+ !    FITBAKASP.
+ !
+ !    A C Davenhall./ROE/                                 12/8/82.
+ !-
+INPIC1/FRAME(R)/     ! Input frame to be fitted.
+BOXFIL/FRAME(R)/     ! Input file of coords. for exclusion boxes.
+POLBAK/FRAME(W)/     ! Frame to hold the poly. background.
+NORIMG/FRAME(W)/     ! Frame to hold normalised image.
+WORK1/FRAME(W)/      ! Work frame for scaled avoidance boxes.
+REPLY/VALUE/
+ICELL/VALUE/         ! Size of an averaging CELL Side.
+COEFX/VALUE/         ! No. of X coefficients to be fitted.
+COEFY/VALUE/         ! " . "  Y      "       "  "    "   .
+TITLE/VALUE/         ! Title to appear on listings etc.

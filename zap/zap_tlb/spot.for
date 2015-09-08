@@ -1,0 +1,45 @@
+      SUBROUTINE SPOT (ID,X,Y,NUM)
+C
+C DRAW A SPOT ON ARGS AT POSITION (X,Y) (USER UNITS) OF WIDTH 1
+C PIXELS. (ID IS ID OF IMAGE)
+C  IF NUM IS GREATER THAN 0, THE CROSS IS NUMBERED AS NUM.
+C
+      INTEGER PX,PY,STATUS
+      CHARACTER*72 TEXT
+      REAL X,Y,UX,UY,DX,DY,XVAL(2),YVAL(2)
+      XVAL(1) = INT(X)
+      YVAL(1) = INT(Y)
+      XVAL(2) = INT(X)
+      YVAL(2) = INT(Y)
+      CALL ARGS_POLYL (ID,2,XVAL,YVAL,STATUS)
+C
+      IF (NUM.GT.0) THEN
+         DO K = 1,72
+            TEXT(K:K) = ' '
+         ENDDO
+         WRITE(TEXT,900)NUM
+  900    FORMAT(I10)
+         KSHIFT = 0
+         DO K = 1,9
+            IF(TEXT(K:K).EQ.' ') KSHIFT = K
+         ENDDO
+         DO K = 1,10
+            J = K + KSHIFT
+            TEXT(K:K) = TEXT(J:J)
+         ENDDO
+         CALL ARGS_UTOP(ID,X,Y,PX,PY,STATUS)
+         CALL ARGS_PTOU(ID,PX+3,PY+3,UXA,UYA,STATUS)
+         KX = UXA
+         KY = UYA
+         CALL ARGTXT(TEXT,'B',0,KX,KY,0)
+      ENDIF
+C
+C
+C
+      END
+ 
+ 
+ 
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C

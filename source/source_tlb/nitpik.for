@@ -1,0 +1,174 @@
+      PROGRAM NITPIK
+
+*+
+*
+*  NITPIK   SIGMAS  IMAGEIN  IMAGEOUT
+*
+*  REMOVE BLEMISHES FROM IMAGEIN GIVING IMAGEOUT
+*
+*   PARAMETERS ARE:
+*   SIGMAS:   HOW MANY ESTIMATED STANDARD DEVIATIONS TO BE
+*    ALLOWED BEFORE A BLEMISH IS FLAGGED.  THE IMAGE IS ASSUMED
+*    LARGELY TO CONSIST OF BACKGROUND AND TO EXHIBIT
+*    POISSON STATISTICS.
+*
+*   IN:  INPUT IMAGE
+*   OUT:  OUTPUT IMAGE
+*
+*  IT IS IMPORTANT THAT THE PICTURE IS NOT UNDERSAMPLED.
+*
+*-
+
+
+      INTEGER IDIMN(99)
+      EQUIVALENCE (IDIMN(1),NX), (IDIMN(2),NY)
+
+      INCLUDE 'INTERIM(FMTPAR)'
+
+
+*  VALIDATE SIGMAS
+      SIGMAS=5.0
+      CALL RDKEYR('SIGMAS',.FALSE.,1,SIGMAS,NVALS,JSTAT)
+      IF (SIGMAS.LT.1.0) GO TO 9010
+
+*  VALIDATE INPUT IMAGE
+      CALL RDIMAG('IN',FMT_R,99,IDIMN,NDIMS,IPIN,JSTAT)
+      IF (NDIMS.NE.2) GO TO 9020
+      IF (NX.LT.3.OR.NY.LT.3) GO TO 9030
+
+*  OPEN OUTPUT IMAGE
+      CALL WRIMAG('OUT',FMT_R,IDIMN,NDIMS,IPOUT,JSTAT)
+
+*  REPORT & REMOVE BLEMISHES
+      CALL SNITPK(SIGMAS,%VAL(IPIN),NX,NY,%VAL(IPOUT))
+      GO TO 9999
+
+*  ERRORS
+ 9010 CONTINUE
+      CALL WRUSER('SIGMAS TOO SMALL!',JSTAT)
+      GO TO 9999
+ 9020 CONTINUE
+      CALL WRUSER('MUST BE 2-D!',JSTAT)
+ 9030 CONTINUE
+      CALL WRUSER('IMAGE TOO SMALL!',JSTAT)
+
+*  WRAP UP
+ 9999 CONTINUE
+      CALL FRDATA(' ',JSTAT)
+
+      END
+      SUBROUTINE SNITPK(SIGMAS,A,NX,NY,B)
+*
+*  REMOVE & REPORT BLEMISHES IN 2-D ARRAY OF PHOTON COUNTS
+*
+*  GIVEN:
+*     SIGMAS      TOLERANCE (BACKGROUND STANDARD DEVIATIONS)
+*     A           INPUT IMAGE
+*     NX,NY       DIMENSIONS OF IMAGE (BOTH > 2)
+*
+*  RETURNED:
+*     B           OUTPUT IMAGE
+*
+
+      INTEGER NX,NY
+      REAL SIGMAS,A(NX,NY),B(NX,NY)
+
+      CHARACTER*70 LINE
+
+
+*  COPY PICTURE AND ESTIMATE BACKGROUND
+      BIAS=A(NX/2,NY/2)
+      S=0.0
+      DO IY=1,NY
+         DO IX=1,NX
+            PXV=A(IX,IY)
+            B(IX,IY)=PXV
+            S=S+(PXV-BIAS)
+         END DO
+      END DO
+      BIAS=BIAS+S/(REAL(NX)*REAL(NY))
+      TOL=3.0*SQRT(ABS(BIAS))
+      S=0.0
+      N=0
+      DO IY=1,NY
+         DO IX=1,NX
+            V=A(IX,IY)-BIAS
+            IF (ABS(V).LE.TOL) THEN
+               S=S+V
+               N=N+1
+            END IF
+         END DO
+      END DO
+      BG=BIAS+S/MAX(N,1)
+
+*  'TOO DIM TO TEST' CRITERION
+      DIM=SIGMAS*SIGMAS
+
+*  'IN STAR' CRITERION
+      STAR=BG+5.0*SQRT(ABS(BG))
+
+*  RESET BAD PIXEL COUNT
+      NBLEM=0
+
+*  LOOK AT ALL PIXELS EXCEPT EDGE
+      DO IY=2,NY-1
+         DO IX=2,NX-1
+
+*        RESET BLEMISH FLAG
+            IBLEM=0
+
+*        PICK UP PIXEL
+            PXV=A(IX,IY)
+
+*        EXPECTED VALUE = MEAN OF SURROUNDING EIGHT
+            S=0.0
+            DO J=IY-1,IY+1
+               DO I=IX-1,IX+1
+                  S=S+A(I,J)
+               END DO
+            END DO
+            EV=(S-PXV)/8.0
+
+*        'BLEMISH' CRITERION
+            BLEM=SIGMAS*SQRT(ABS(EV))
+
+*        DECIDE WHETHER IN STAR OR NOT
+            IF (EV.GT.STAR) THEN
+
+*           IN STAR
+               IF (PXV.LT.EV/4.0-BLEM) IBLEM=1
+               IF (PXV.GT.4.0*EV+BLEM) IBLEM=2
+            ELSE
+
+*           NOT IN STAR
+               D=PXV-EV
+               IF (D.LT.-BLEM) IBLEM=3
+               IF (D.GT.BLEM) IBLEM=4
+            END IF
+
+*        OVERRIDE IF NEGATIVE OR SMALL
+            IF (PXV.LT.DIM) IBLEM=0
+            IF (PXV.LT.0.0) IBLEM=5
+
+*        IF BLEMISH, FIX AND REPORT
+            IF (IBLEM.NE.0) THEN
+               B(IX,IY)=EV
+               NBLEM=NBLEM+1
+               IF (NBLEM.EQ.51) THEN
+                  CALL WRUSER('NO MORE BLEMISHES WILL BE REPORTED',
+     &                        JSTAT)
+               ELSE IF (NBLEM.LE.50) THEN
+                  WRITE (LINE,'(''BLEMISH AT    ('',I4,'','',I4,'')'',
+     &                        G16.4,''  CHANGED TO'',
+     &                        G16.4)') IX-1,IY-1,PXV,EV
+                  CALL WRUSER(LINE,JSTAT)
+               END IF
+            END IF
+         END DO
+      END DO
+
+*  WRAP UP
+      WRITE (LINE,'(I6,''  BLEMISHES REMOVED'')') NBLEM
+      CALL WRUSER(LINE,JSTAT)
+
+      END

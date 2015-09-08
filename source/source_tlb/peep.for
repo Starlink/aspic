@@ -1,0 +1,100 @@
+*
+*+ PEEP  IMAGE  X0  Y0  [FACTOR]
+*
+*  DISPLAY 9 X 9 AREA OF IMAGE, CENTRED ON (X0,Y0), ON TERMINAL
+*
+*  (0,0) IS THE BOTTOM LEFT-HAND CORNER
+*
+*  INTEGER REPRESENTATION OF UP TO 7 CHARACTERS (INCLUDING MINUS
+*  SIGN IF APPROPRIATE) IS USED FOR EACH DISPLAYED PIXEL.
+*
+*  THE PIXEL VALUES ARE MULTIPLIED BY FACTOR BEFORE DISPLAY.  FACTOR
+*  DEFAULTS TO 1.
+*
+
+
+      INTEGER IDIMN(99)
+      INCLUDE 'INTERIM(FMTPAR)'
+
+
+*  PREPARE TO READ IMAGE AND ENSURE 2-D
+      CALL RDIMAG('IMAGE',FMT_R,99,IDIMN,NDIMS,IPIN,JSTAT)
+      IF (NDIMS.NE.2) THEN
+         CALL WRUSER('MUST BE 2D IMAGE!',J)
+      ELSE
+
+*     PICK UP CENTRE X,Y
+         CALL RDKEYI('X0',.FALSE.,1,IX0,NVALS,JSTAT)
+         CALL RDKEYI('Y0',.FALSE.,1,IY0,NVALS,JSTAT)
+
+*     PICK UP FACTOR
+         FACTOR=1.0
+         CALL RDKEYR('FACTOR',.FALSE.,1,FACTOR,NVALS,JSTAT)
+
+*     PRINT REGION
+         CALL PEEP(%VAL(IPIN),IDIMN(1),IDIMN(2),IX0,IY0,FACTOR)
+
+*     WRAP UP
+         CALL FRDATA(' ',JSTAT)
+      END IF
+
+      END
+
+      SUBROUTINE PEEP(PIC,NX,NY,IX0,IY0,FACTOR)
+*
+*  PRINT 9 X 9 REGION OF ARRAY PIC, CENTRED ON IX0,IY0
+*
+
+      REAL PIC(NX,NY)
+      INTEGER NX,NY,IX0,IY0
+
+*  WORK FIELD AND REPORT LINE
+      CHARACTER CWK*9,CLINE*72
+
+*  X,Y COORDINATES FOR LEFT, RIGHT, TOP, BOTTOM
+
+*  REPORT X,Y FOR TOP LEFT HAND CORNER
+      IXL=IX0-4
+      IYT=IY0+4
+      WRITE (CLINE,'(''('',I4,'','',I4,'')'')') IXL,IYT
+ 1    FORMAT ('(',I4,',',I4,')',50X,'(',I4,',',I4,')')
+      CALL WRUSER(' ',JSTAT)
+      CALL WRUSER(CLINE,JSTAT)
+      CALL WRUSER(' ',JSTAT)
+
+*  MAIN REPORT
+
+      DO J=1,9
+         IY=IY0-J+6
+         DO I=1,9
+            IX=IX0+I-4
+            IF (IX.LT.1.OR.
+     &          IX.GT.NX.OR.
+     &          IY.LT.1.OR.
+     &          IY.GT.NY) THEN
+               CWK=' ........ '
+            ELSE
+               V=NINT(PIC(IX,IY)*FACTOR)
+               IF (V.GT.9999999.0) THEN
+                  CWK=' +++++++ '
+               ELSE IF (V.LT.-999999.0) THEN
+                  CWK=' ------- '
+               ELSE
+                  WRITE (CWK,'(F9.0)') V
+               END IF
+            END IF
+            NPTR=(I-1)*8+1
+            CLINE(NPTR:NPTR+7)=CWK(1:8)
+         END DO
+         CALL WRUSER(CLINE,JSTAT)
+      END DO
+
+*  REPORT BOTTOM RIGHT HAND CORNER
+      IXR=IX0+4
+      IYB=IY0-4
+      WRITE (CLINE,'(61X,''('',I4,'','',I4,'')'')') IXR,IYB
+         CALL WRUSER(' ',JSTAT)
+      CALL WRUSER(CLINE,JSTAT)
+      CALL WRUSER(' ',JSTAT)
+
+      END

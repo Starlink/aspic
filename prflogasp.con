@@ -1,0 +1,8 @@
+ !+
+ !     PRFLOGASP.
+ !
+ !     A C Davenhall./ROE/                              7/8/82.
+ !-
+OLDPRF/FRAME(R)/      ! Input profile.
+NEWPRF/FRAME(W)/      ! Output profile.
+REPLY/VALUE/

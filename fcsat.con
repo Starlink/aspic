@@ -1,0 +1,5 @@
+INPUT/FRAME(R)/
+OUTPUT/FRAME(W)/
+CUTOFF/VALUE/5
+ERRIN/ERROR/Error on input frame
+ERROUT/ERROR/Error on output frame

@@ -1,0 +1,6 @@
+! DSCL PROCEDURE TO DISABLE PROGRAM PROMPTING
+!
+    if f$logical("DSCL_HELP_PROMPT").nes."" then deassign dscl_help_prompt
+    write sys$output " "
+    write sys$output "Ok, automatic prompting is now cancelled."
+    write sys$output " "

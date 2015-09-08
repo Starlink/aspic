@@ -1,0 +1,176 @@
+$!
+$! Installs a program with its libraries into a software system
+$! under developement. The program etc can come from a user specified
+$! directory or from a specified developement system.
+$!-------------------------------------------------------------------
+$!
+$	ON WARNING THEN EXIT
+$!
+$! Check that a system is being developed
+$!
+$	IF F$TYPE(DEVSYS_SYS).EQS."" THEN DEVSYS
+$	IF F$TYPE(DEVSYS_SYS).EQS."" THEN EXIT
+$	WRITE SYS$OUTPUT DEVSYS_SYS," development"
+$!
+$! Find which program is to be installed
+$!
+$	IF P1.EQS."" THEN INQUIRE P1 "Install which program?"
+$	IF P1.EQS."" THEN EXIT
+$	NAME=F$PARSE(P1,,,"NAME")
+$	GIVEN_DIR=F$PARSE(P1,,,"DEVICE")+F$PARSE(P1,,,"DIRECTORY")
+$!
+$! See where the libraries etc are coming from
+$!
+$	SYS_TOP=GIVEN_DIR
+$	SYS_SOURCE=GIVEN_DIR
+$	SYS_OBJECT=GIVEN_DIR
+$	SYS_BUILD=GIVEN_DIR
+$	IF P2.EQS."" THEN INQUIRE P2 "Source system?"
+$	IF P2.EQS."" THEN GOTO LBL2
+$	   SYS_TOP=F$TRNLNM(P2)
+$	   IF SYS_TOP.NES."" THEN GOTO LBL1
+$	      WRITE SYS$OUTPUT " *** NO SUCH SYSTEM : ",P2
+$	      EXIT
+$LBL1:
+$	   SYS_SOURCE=SYS_TOP-"]"+".SOURCE]"
+$	   SYS_OBJECT=SYS_TOP-"]"+".OBJECT]"
+$	   SYS_PROCS=SYS_TOP-"]"+".PROCS]"
+$	   SYS_BUILD=SYS_TOP-"]"+".BUILD]"
+$LBL2:
+$!
+$! Check which files exist for this program
+$!
+$	EXE=F$SEARCH(SYS_TOP+NAME+".EXE")
+$	EXE=EXE-F$PARSE(EXE,,,"VERSION")
+$	IF EXE.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_TOP,NAME,".EXE"
+$!
+$	TLB=F$SEARCH(SYS_SOURCE+NAME+".TLB")
+$	TLB=TLB-F$PARSE(TLB,,,"VERSION")
+$	IF TLB.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_SOURCE,NAME,".TLB"
+$!
+$	OLB=F$SEARCH(SYS_OBJECT+NAME+".OLB")
+$	OLB=OLB-F$PARSE(OLB,,,"VERSION")
+$	IF OLB.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_OBJECT,NAME,".OLB"
+$!
+$	UTIL_TLB=F$SEARCH(SYS_SOURCE+"UTILITIES.TLB")
+$	UTIL_TLB=UTIL_TLB-F$PARSE(UTIL_TLB,,,"VERSION")
+$	IF UTIL_TLB.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_SOURCE,"UTILITIES.TLB"
+$!
+$	UTIL_OLB=F$SEARCH(SYS_OBJECT+"UTILITIES.OLB")
+$	UTIL_OLB=UTIL_OLB-F$PARSE(UTIL_OLB,,,"VERSION")
+$	IF UTIL_OLB.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_OBJECT,"UTILITIES.OLB"
+$!
+$	CON=F$SEARCH(SYS_TOP+NAME+".CON")
+$	CON=CON-F$PARSE(CON,,,"VERSION")
+$	IF CON.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_TOP,NAME,".CON"
+$!
+$	BLD=F$SEARCH(SYS_BUILD+NAME+".BLD")
+$	BLD=BLD-F$PARSE(BLD,,,"VERSION")
+$	IF BLD.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",SYS_BUILD,NAME,".BLD"
+$!
+$	SET MESSAGE/NOTEXT/NOFAC/NOID/NOSEV
+$	ON WARNING THEN CONTINUE
+$	LIBRARY/EXTRACT='NAME'/OUTPUT='NAME'.TOP 'SYS_SOURCE'TOPSOURCE.TLB
+$	ON WARNING THEN CONTINUE
+$	LIBRARY/EXTRACT='NAME'/OUTPUT='NAME'.HLP 'SYS_TOP''P2'HELP.HLB
+$	SET MESSAGE/TEXT/FAC/ID/SEV
+$	ON WARNING THEN EXIT
+$!
+$	HLP=F$SEARCH(NAME+".HLP")
+$	HLP=HLP-F$PARSE(HLP,,,"VERSION")
+$	IF HLP.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",NAME,".HLP"
+$!
+$	TOP=F$SEARCH(NAME+".TOP")
+$	TOP=TOP-F$PARSE(TOP,,,"VERSION")
+$	IF TOP.EQS."" THEN WRITE SYS$OUTPUT " *** WARNING: File not found : ",NAME,".TOP"
+$!
+$! Copy all files to relevant directories
+$!
+$	IF EXE.EQS."" THEN GOTO LBL3
+$	   COPY 'EXE' TOP:'NAME'.EXE
+$	   PU TOP:'NAME'.EXE
+$	   WRITE SYS$OUTPUT " .EXE file copied and purged"
+$LBL3:
+$	IF TLB.EQS."" THEN GOTO LBL4
+$	   COPY 'TLB' SOURCE:'NAME'.TLB
+$	   PU SOURCE:'NAME'.TLB
+$	   WRITE SYS$OUTPUT " .TLB file copied and purged"
+$LBL4:
+$	IF OLB.EQS."" THEN GOTO LBL5
+$	   COPY 'OLB' OBJECT:'NAME'.OLB
+$	   PU OBJECT:'NAME'.OLB
+$	   WRITE SYS$OUTPUT " .OLB file copied and purged"
+$LBL5:
+$	IF CON.EQS."" THEN GOTO LBL6
+$	   COPY 'CON' TOP:'NAME'.CON
+$	   PU TOP:'NAME'.CON
+$	   WRITE SYS$OUTPUT " .CON file copied and purged"
+$LBL6:
+$	IF HLP.EQS."" THEN GOTO LBL7
+$	   LIBRARY TOP:'DEVSYS_SYS'HELP.HLB 'HLP'
+$	   WRITE SYS$OUTPUT " .HLP file inserted into help library"
+$	   DELETE 'HLP';0
+$LBL7:
+$	IF BLD.EQS."" THEN GOTO LBL8
+$	   COPY 'BLD' BUILD:'NAME'.BLD
+$	   PU BUILD:'NAME'.BLD
+$	   WRITE SYS$OUTPUT " .BLD file copied and purged"
+$LBL8:
+$	IF TOP.EQS."" THEN GOTO LBL81
+$	   LIBRARY SOURCE:TOPSOURCE.TLB 'TOP'
+$	   WRITE SYS$OUTPUT " .TOP file inserted into TOPSOURCE library"
+$	   DELETE 'TOP';0
+$LBL81:
+$       IF UTIL_TLB.EQS."".AND.UTIL_OLB.EQS."" THEN GOTO LBL84
+$LBL82:
+$          INQUIRE ANS "Copy UTILITIES libraries? (Y/N)"
+$          IF ANS.EQS."N" THEN GOTO LBL84
+$          IF ANS.NES."Y" THEN GOTO LBL82
+$          IF UTIL_TLB.EQS."" THEN GOTO LBL83
+$             COPY 'UTIL_TLB' SOURCE:UTILITIES.TLB
+$             PU SOURCE:UTILITIES.TLB
+$	      WRITE SYS$OUTPUT " UTILITIES.TLB copied and purged"
+$LBL83:
+$          IF UTIL_OLB.EQS."" THEN GOTO LBL84
+$             COPY 'UTIL_OLB' OBJECT:UTILITIES.OLB
+$             PU OBJECT:UTILITIES.OLB
+$	      WRITE SYS$OUTPUT " UTILITIES.OLB copied and purged"
+$LBL84:
+$!
+$! Allow user to update any INIT.SCL file which may exist for the system
+$!
+$	INIT=F$SEARCH(DEVSYS_TOP+"INIT.SCL")
+$	INIT=INIT-F$PARSE(INIT,,,"VERSION")
+$	GENERIC=INIT-F$PARSE(INIT,,,"TYPE")
+$	IF INIT.EQS."" THEN GOTO LBL10
+$LBL9:
+$	INQUIRE ANS "Update the INIT.SCL file? (Y/N)"
+$	IF ANS.EQS."N" THEN GOTO LBL10
+$	IF ANS.NES."Y" THEN GOTO LBL9
+$	DEASSIGN SYS$INPUT
+$	ASSIGN SYS$COMMAND SYS$INPUT
+$	ED 'INIT'
+$	DEL 'GENERIC'.SCC;*
+$	COMPILE:==$STARDISK:[STARLINK.PACK.ASPIC.DSCL]COMPILE
+$	COMPILE 'INIT'/NOEC
+$	DEL/SYM/GLO COMPILE
+$	PU 'GENERIC'.*
+$	WRITE SYS$OUTPUT " INIT files updated and purged"
+$LBL10:
+$!
+$! Allow user to update any TIDY file which may exist for the system
+$!
+$	TIDY=F$SEARCH(DEVSYS_TOP+DEVSYS_SYS+"TIDT.COM")
+$	TIDY=TIDY-F$PARSE(INIT,,,"VERSION")
+$	IF TIDY.EQS."" THEN EXIT
+$	NAME=F$PARSE(TIDY,,,"NAME")
+$LBL11:
+$	INQUIRE ANS "Update the file ''NAME'.COM ? (Y/N)"
+$	IF ANS.EQS."N" THEN EXIT
+$	IF ANS.NES."Y" THEN GOTO LBL11
+$	DEASSIGN SYS$INPUT
+$	ASSIGN SYS$COMMAND SYS$INPUT
+$	ED 'TIDY'
+$	PU 'TIDY'
+$	WRITE SYS$OUTPUT " File ''NAME'.COM  updated and purged"
+$	EXIT

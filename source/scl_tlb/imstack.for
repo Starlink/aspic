@@ -1,0 +1,353 @@
+!
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!
+!      *********************
+!      *                   *
+!      * PROCEDURE IMSTACK *
+!      *                   *
+!      *********************
+!
+!
+!       CALLING SEQUENCE
+!           IMSTACK
+!
+!
+!       FUNCTION:-
+!          This stacks together images. Basically it is a proceedure
+!          to get a number of images ready for use with PSTACK or
+!          IMGARITH. As long as the images are linear with intensity
+!          have zero intensity at zero and are already quite well
+!          aligned, this proceedure will do a lot of preparation and then
+!          run the stacking program. It can clean the images, rotate
+!          them for perfect alignment by use of an input list of XY star
+!          coordinates,normalise and calc the noise in the images if
+!          using PSTACK in the mode that needs that and then perform the
+!          mode of PSTACK or IMGARITH desired.
+!
+!       USE
+!          It can make files XX1A,,,XXnA;XX1B,,,XXnB;STOUT;XXC;XXD,XXST;
+!          in the directory you are using, so there must be space and
+!          no files with those names there.
+!
+!
+!
+!       A J PENNY                  RGO                      82-NOV
+!--------------------------------------------------------------------
+!
+!
+!
+!  USES
+!   This package
+!          PSTACK,ASXY
+!   EDRS package
+!          XYKEY,FFCLEAN,CENTROID,RESAMPLE,ARITH,IMGARITH
+!
+!  WRITTEN BY:-
+!     A.J.Penny                                 82-7-19
+! --------------------------------------------------------------
+!
+!
+!
+!
+INQUIRE P1 "WORKING AND OUTPUT DISK ? "
+!
+!
+!
+INQUIRE CLEAN " IMAGES TO BE FFCLEANED BEFORE STACKING (Y/N) ? "
+IF CLEAN .NES. "Y" THEN GOTO K1
+INQUIRE FFBOX "FFCLEAN BOX SIZE (USUALLY 3) ? "
+K1:
+!
+!
+!
+WRITE SYS$OUTPUT " "
+INQUIRE TURN " IMAGES TO BE TURNED TO FIT BEFORE STACKING (Y/N) ? "
+IF TURN .NES. "Y" THEN GOTO J1
+WRITE SYS$OUTPUT "TURNING TO BE DONE BY COORDINATE FILES MADE FROM"
+INQUIRE TURNMD "FILES (F), KEYBOARD (K), OR FIT TO STARS IN IMAGE (C) ?"
+J1:
+!
+!
+!
+WRITE SYS$OUTPUT " "
+INQUIRE STOUT "OUTPUT FILE NAME (OMIT DISK PREFIX) ? "
+!
+!
+!
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT "STACKING METHOD TO USE IS"
+INQUIRE STACMD "MEAN; MODE; MEDIAN; SUM ? "
+ERRMD := CALC
+IF STACMD .EQS. "SUM" THEN GOTO L1
+WRITE SYS$OUTPUT "GET SKY LEVEL AND ERRORS FOR NORMALISING AND"
+WRITE SYS$OUTPUT "WEIGHTING BY LETTING CALCS OCCUR, OR FROM KEYBOARD"
+WRITE SYS$OUTPUT "INPUT ? "
+INQUIRE ERRMD "TYPE CALC OR KEY "
+L1:
+IF STACMD .EQS. "SUM" THEN GOTO N1
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " AREA TO BE USED TO FIND SKY LEVEL AND NOISE"
+INQUIRE XS "X START OF REFERENCE AREA ? "
+INQUIRE XE   "X END OF REFERENCE AREA ? "
+INQUIRE YS "Y START OF REFERENCE AREA ? "
+INQUIRE YE   "Y END OF REFERENCE AREA ? "
+N1:
+!
+!
+!
+IF TURN .NES. "Y" THEN GOTO G1
+IF TURNMD .NES. "K" THEN GOTO G1
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " PUT IN STANDARD COORDINATES "
+WRITE SYS$OUTPUT " "
+LET XYKEY_ILEVEL=1
+LET XYKEY_OUTPUT='P1':XXST
+LET XYKEY_TITLE=STANDARD
+EDRS:XYKEY
+G1:
+IF TURN .NES. "Y" THEN GOTO G2
+IF TURNMD .NES. "F" THEN GOTO G2
+WRITE SYS$OUTPUT " "
+INQUIRE FILE "NAME OF STANDARD COORDINATE FILE IS ?"
+COPY 'FILE'.BDF;1 'P1':XXST
+G2:
+IF TURN .NES. "Y" THEN GOTO G3
+IF TURNMD .NES. "C" THEN GOTO G3
+WRITE SYS$OUTPUT " "
+INQUIRE FILE "NAME OF STANDARD COORDINATE FILE IS ? "
+COPY 'FILE'.BDF;1 'P1':XXST
+INQUIRE CSIZE "CENTROID BOX SIZE = ? "
+INQUIRE CSHIFT "CENTROID MAX SHIFT = ? "
+G3:
+!
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!   LOOP GETTING IMAGES      !!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!
+!
+COUNT=0
+!
+A1:
+!
+COUNT=COUNT + 1
+!
+WRITE SYS$OUTPUT " "
+INQUIRE IM "NAME OF FILE ''COUNT' ? "
+IF IM .EQS. "" THEN GOTO A2
+COPY 'IM'.BDF;1 'P1':XX'COUNT'
+!
+IF TURN .NES. "Y" THEN GOTO H1
+IF TURNMD .NES. "K" THEN GOTO H1
+WRITE SYS$OUTPUT "PUT IN COORDINATES "
+WRITE SYS$OUTPUT " "
+LET XYKEY_ILEVEL=1
+LET XYKEY_OUTPUT='P1':XXK'COUNT'
+LET XYKEY_TITLE='P1':XXK'COUNT'
+EDRS:XYKEY
+H1:
+!
+IF TURN .NES. "Y" THEN GOTO H2
+IF TURNMD .NES. "F" THEN GOTO H2
+INQUIRE FILE "NAME OF COORDINATE FILE IS ? "
+COPY 'FILE'.BDF;1 'P1':XXK'COUNT'
+H2:
+!
+IF STACMD .EQS. "SUM" THEN GOTO H3
+IF ERRMD .NES. "KEY" THEN GOTO H3
+INQUIRE PSIN " STD DEV (AFTER NORMALISATION) OF SKY NOISE ? "
+LET PSTACK_ER'COUNT'='PSIN'
+H3:
+!
+GOTO A1
+!
+A2:
+!
+TOT=COUNT - 1
+!
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!    RESERVE SPACE FOR OUTPUT FILE  !!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+COPY 'P1':XX1.BDF 'P1':XXTEMP.BDF
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!   LOOP PREPARING IMAGES FOR STACKING    !!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!
+!
+COUNT=0
+B1:
+COUNT=COUNT + 1
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " DOING IM ''COUNT' "
+!
+!!!!!!!!  FFCLEAN THE IMAGES  !!!!!!!!!!!!!!!!!!!!!
+!
+IF CLEAN .NES. "Y" THEN GOTO E1
+LET FFCLEAN_TITLE=IM'COUNT'
+LET FFCLEAN_INPUT='P1':XX'COUNT'
+LET FFCLEAN_OUTPUT='P1':XX'COUNT'A
+LET FFCLEAN_XSIZE='FFBOX'
+LET FFCLEAN_YSIZE='FFBOX'
+EDRS:FFCLEAN
+DELETE 'P1':XX'COUNT'.BDF;1
+E1:
+IF CLEAN .EQS. "Y" THEN GOTO E2
+RENAME 'P1':XX'COUNT'.BDF;1 'P1':XX'COUNT'A
+E2:
+!
+!!!!!   TURN THE IMAGES IF WANTED   !!!!!!!!!!!!!!
+!
+IF TURN .NES. "Y" THEN GOTO F1
+!
+IF TURNMD .NES. "C" THEN GOTO F3
+LET CENTROID_IMAGE='P1':XX'COUNT'A
+LET CENTROID_TITLE=" "
+LET CENTROID_ILEVEL=3
+LET CENTROID_INPUT='P1':XXST
+LET CENTROID_ISIZE='CSIZE'
+LET CENTROID_MAXSHIFT='CSHIFT'
+LET CENTROID_OUTPUT='P1':XXK'COUNT'
+EDRS:CENTROID
+F3:
+!
+LET XYFIT_INPUTA='P1':XXST
+LET XYFIT_INPUTB='P1':XXK'COUNT'
+LET XYFIT_ILEVEL=3
+LET XYFIT_NSIGMA=2.5
+EDRS:XYFIT
+DELETE 'P1':XXK'COUNT'.BDF;1
+!
+LET RESAMPLE_TRCOEFFS=XYFIT_TRCOEFFS
+LET RESAMPLE_INPUT='P1':XX'COUNT'A
+LET RESAMPLE_OUTPUT='P1':XX'COUNT'B
+LET RESAMPLE_METHOD=NEAREST
+LET RESAMPLE_TITLE=IM'COUNT'
+EDRS:RESAMPLE
+!
+DELETE 'P1':XX'COUNT'A.BDF;1
+!
+F1:
+!
+IF TURN .EQS. "Y" THEN GOTO F2
+RENAME 'P1':XX'COUNT'A.BDF;1 'P1':XX'COUNT'B
+F2:
+!
+!!!!!!   NORMALISE IF WANTED   !!!!!!!!!!!!!!!!!!!!!!
+!
+IF STACMD .EQS. "SUM" THEN GOTO M2
+!
+LET ASXY_IMAGE='P1':XX'COUNT'B
+LET ASXY_ILEVEL=2
+LET ASXY_XSTART='XS'
+LET ASXY_XEND='XE'
+LET ASXY_YSTART='YS'
+LET ASXY_YEND='YE'
+ASXY
+IF ERRMD .NES. "CALC" THEN GOTO M1
+LET PSTACK_ER'COUNT'=ASXY_ERRNOM
+M1:
+!
+LET ARITH_FUNCTION=DIVIDE
+LET ARITH_IMAGE='P1':XX'COUNT'B
+LET ARITH_CONSTANT=ASXY_AVERAGE
+EDRS:ARITH
+!
+M2:
+!
+!
+!
+IF COUNT .LT. TOT THEN GOTO B1
+!
+!
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!   STACK THE IMAGES  !!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!
+!
+!
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT " STACKING IMAGES "
+!
+!
+!
+DELETE 'P1':XXTEMP.BDF;1
+!
+IF STACMD .EQS. "SUM" THEN GOTO R2
+COUNT=0
+R1:
+COUNT=COUNT + 1
+LET PSTACK_IM'COUNT'='P1':XX'COUNT'B
+IF COUNT .LT. TOT THEN GOTO R1
+COUNT=COUNT+1
+LET PSTACK_IM'COUNT'=
+!
+LET PSTACK_METHOD='STACMD'
+LET PSTACK_TITLE=' '
+LET PSTACK_OUT='P1':XXF
+PSTACK
+RENAME 'P1':XXF.BDF;1 'P1':'STOUT'
+CLEAR PSTACK_
+R2:
+!
+!
+!
+IF STACMD .NES. "SUM" THEN GOTO S3
+LET IMGARITH_AIMAGE='P1':XX1B
+LET IMGARITH_BIMAGE='P1':XX2B
+LET IMGARITH_FUNCTION=ADD
+LET IMGARITH_OUTPUT='P1':XXC
+LET IMGARITH_TITLE='P1':XXC
+EDRS:IMGARITH
+COUNT=2
+S1:
+COUNT=COUNT+1
+IF COUNT .GT. TOT THEN GOTO S2
+WRITE SYS$OUTPUT " "
+WRITE SYS$OUTPUT "DOING IMAGE ''COUNT' "
+LET IMGARITH_AIMAGE='P1':XXC
+LET IMGARITH_OUTPUT='P1':XXD
+LET IMGARITH_BIMAGE='P1':XX'COUNT'B
+EDRS:IMGARITH
+DELETE 'P1':XXC.BDF;1
+RENAME 'P1':XXD.BDF;1 'P1':XXC
+GOTO S1
+S2:
+RENAME 'P1':XXC.BDF;1 'P1':'STOUT'
+S3:
+!
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  TIDY UP    !!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!
+COUNT=0
+D1:
+COUNT=COUNT + 1
+DELETE 'P1':XX'COUNT'B.BDF;1
+IF COUNT .LT. TOT THEN GOTO D1
+IF TURN .NES. "Y" THEN GOTO D2
+DELETE 'P1':XXST.BDF;1
+D2:
+!
+!
+!
+CLEAR XYKEY_
+CLEAR PSTACK_
+CLEAR FFCLEAN_
+CLEAR CENTROID_
+CLEAR XYFIT_
+CLEAR RESAMPLE_
+CLEAR ASXY_
+CLEAR ARITH_
+CLEAR IMGARITH_
+!
+!
+!

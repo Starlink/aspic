@@ -1,0 +1,13 @@
+ !+
+ !     HISTP.
+ !
+ !     A C Davenhall./ROE/                                  15/12/82.
+ !-
+INPIC1/FRAME(R)/           ! Image to be examined.
+REPLY/VALUE/
+IXST/VALUE/                ! X coord. of leftmost pixel.
+IXFIN/VALUE/               ! "   "  . "  rightmost  "  .
+IYST/VALUE/                ! Y   "  . "  bottom     "  .
+IYFIN/VALUE/               ! "   "  . "  top        "  .
+ARMIN/VALUE/               ! Minimum value in the histogram.
+ARMAX/VALUE/               ! Maximum   "   "   "     "     .

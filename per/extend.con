@@ -1,0 +1,9 @@
+INPUT/FRAME(R)/
+EPOCH/VALUE/
+COFFS/FRAME(R)/COFFS/
+OUTPUT/FRAME(W)/
+TITLE/VALUE/
+ERRIN/ERROR/*** Failed to obtain input dataset ***/
+ERREP/ERROR/*** Failed to obtain the epoch ***/
+ERRCOF/ERROR/*** Error getting coefts _ run MEMPOW ***/
+ERROUT/ERROR/*** Failed to obtain output dataset ***/

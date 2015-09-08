@@ -1,0 +1,14 @@
+ !+
+ !    PECALBASP.
+ !
+ !    A C Davenhall./ROE/                                22/7/82.
+ !-
+INPIC1/FRAME(R)/                ! INPIC1 frame to be calibrated.
+REPLY/VALUE/
+ICST/VALUE/                    ! Sample spacing, columns (micron)
+IRST/VALUE/                    ! Sample spacing, rows    (micron)
+PLTSCL/VALUE/                  ! Plate scale (arcsec/mm)
+TITLE/VALUE/                   ! Alphanumeric title.
+FILEIN/VALUE/                  ! VMS Filename (P.E. measures).
+IAPER/VALUE/                   ! No. of a selected aperture.
+COMMAND/VALUE/                 ! PECALBASP command.

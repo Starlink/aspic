@@ -1,0 +1,4 @@
+!	APLOTRNG		D. TUDHOPE/ROE/Dec 1982
+TZEROD/VALUE/				! (R) data level mapped to 0 on args
+TMAXD/VALUE/				! (R) .....................max
+MISREAD/ERROR/ERROR - UNABLE TO READ TZEROD,TMAXD

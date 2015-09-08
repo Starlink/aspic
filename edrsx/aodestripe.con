@@ -1,0 +1,48 @@
+!   Connection file for program AODESTRIPE
+!
+INPUT/FRAME(R)/
+OUTPUT/FRAME(W)/
+METHOD/VALUE//
+PCPOINT/VALUE/
+!
+!   Error parameters specific to AODESTRIPE
+!
+! None
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+BSSOVFLOW/ERROR/*** No room for any more boresight data/
+DESCFULL/ERROR/*** No room for any more descriptors/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+EQULIMS/ERROR/*** Equal limits are not allowed/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+INVBAND/ERROR/*** Data has an invalid IRAS band number/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NOCURS/ERROR/*** Current device does not support a cursor/
+NODEVICE/ERROR/*** Device cannot be opened/
+NONEVAL/ERROR/*** Output would have no valid pixels/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSGSNAME/ERROR/*** SGS device name table not set up/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTCRDD/ERROR/*** File does not contain CRDD data/
+NOTEXT/ERROR/*** Specified file is not a text file/
+NOTIMAGE/ERROR/*** Not an image/
+NOTXYLST/ERROR/*** Not a valid xy list/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOT3DIM/ERROR/*** Not a 3 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+PIXNOSIZ/ERROR/*** Pixels have zero area/
+TOOBAD/ERROR/*** Too many bad values given/
+ZEROFILT/ERROR/*** WARNING: The PSF image has zero total data sum/
+ZEROSCA/ERROR/*** Descriptor BSCALE is zero/

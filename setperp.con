@@ -1,0 +1,9 @@
+!	SETPER		D. TUDHOPE/ROE/Sept 1982
+!	part of iam suite
+SKY/VALUE/-99999.0       !   (R) sky background
+PERCENT/VALUE/           !   (R) threshold as % of sky background
+THRLD/VALUE/             !   (R) threshold
+SCLSTAT/VALUE/1          !    (I) program status
+NOSKY/ERROR/SKY BACKGROUND MUST BE DEFINED FIRST
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT

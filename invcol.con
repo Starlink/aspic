@@ -1,0 +1,8 @@
+ !+
+ !   INVCOL.
+ !
+ !   A C Davenhall./ROE/                                   26/10/82.
+ !-
+INCOL/FRAME(R)/       ! Input colour table.
+OUTCOL/FRAME(W)/      ! Output colour table.
+REPLY/VALUE/

@@ -1,0 +1,18 @@
+!+
+!	IAMANAL		D. TUDHOPE/ROE/Sept 1982
+!                     A C Davenhall./ROE/18.1.84. {Modified.}
+!	part of IAM suite
+!-
+INPUTIMG/FRAME(R)/     ! (RA) input image array
+PARAMS/FRAME(W)/       ! (RA) output array of image parameters + header info
+SKY/VALUE/-99999.0     ! (R)  sky background
+THRLD/VALUE/-99999.0   ! (R)  threshold cut
+AREA/VALUE/10          ! (I)  area cut
+SKYMAG/VALUE/0.0       ! (R)  sky background in one pixel
+REPLY/VALUE/           ! (CH) title
+MAXOBJ/VALUE/1000      ! (I)  Max. permitted no. of objects.
+MISREAD/ERROR/***ERROR whilst reading from environment.
+MISWRITE/ERROR/***ERROR whilst writing to environment.
+NOST/ERROR/***ERROR - Sky and threshold must be set first.
+NOIM/ERROR/***ERROR - No objects have been found by IAMANAL.
+FULL/ERROR/**WARNING - Too many objects detected; list incomplete.

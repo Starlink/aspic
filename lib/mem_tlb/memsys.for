@@ -1,0 +1,3541 @@
+C
+      SUBROUTINE MEINIT
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DATA BP/1H./
+      DO 1  I=1,40
+      PR(I)=BP
+      CALL URESET(I)
+    1 CONTINUE
+      RETURN
+      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C               Maximum-Entropy Data-Processing System                 C
+C                                                                      C
+C               John Skilling                                          C
+C               Dept. Applied Maths. and Theoretical Physics           C
+C               Silver Street                                          C
+C               Cambridge                                              C
+C                                                                      C
+C         (C)   Copyright                                              C
+C               Maximum Entropy Data Consultants Ltd                   C
+C               5 October 1982                                         C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      SUBROUTINE MEM(METHOD,LEVEL,C0A,RATEA,DEFA)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      DATA BP/1H./
+      CALL MEINIT
+C
+C METHOD = M3*1000 + M2*100 + M1*10 + M0
+C
+C M0 = number of search directions
+C   M0 = 3 or 4 or 6
+C
+C M1 = type of entropy
+C   M1 = 0 is fixed default=DEF
+C   M1 = 1 is default = exp(sum(p log f))
+C   M1 = 2 is constant sum(w f)
+C   M1 = 3 is user-supplied defaults in file 20
+C   M1 = 4 is 0<f<1 at fixed default = DEF
+C   M1 = 5 is default-level steering using
+C          S = SUM( DELsquared(f) * log(f) ) with dimensions
+C          for DELsquared picked up from COMMON /MECOMF/ .
+C
+C M2 = statistical test
+C   M2 = 0 is chisquared
+C   M2 = 1 is exact-error-fitting
+C   M2 = 2 is chisquared with no residual having an effect > 6 r.m.s.
+C   M2 = 3 is exact-error-fitting with up to 10. bins in file 39
+C
+C M3 = weighting
+C   M3 = 0 is fixed weighting w=1
+C   M3 = 1 is user-supplied weights in file 19
+C
+      M0=METHOD
+      M1=M0/10
+      M2=M1/10
+      M3=M2/10
+      M0=M0-10*M1
+      M1=M1-10*M2
+      M2=M2-10*M3
+C
+C LEVEL = L1*10 + L0
+C
+C L0 = progress diagnostics
+C   L0 = 0 switches these off
+C   L0 = 1 produces names of main routines
+C   L0 = 2 produces additionally a read/write flowchart
+C
+C L1 = numerical diagnostics
+C   L1 = 0 switches these off
+C   L1 = 1 produces low level diagnostics C, TEST, CNEW
+C   L1 = 2 produces additionally technical diagnostics from control
+C   L1 = 3 produces additionally the subspace scalar product matrices
+C
+      L0=LEVEL
+      L1=L0/10
+      L0=L0-10*L1
+      IF((M0.EQ.2.OR.M0.EQ.3.OR.M0.EQ.4.OR.M0.EQ.6)
+     *.AND.(M1.GE.0.AND.M1.LE.5)
+     *.AND.(M2.EQ.0.OR.M2.EQ.1.OR.M2.EQ.2.OR.M2.EQ.3)
+     *.AND.(M3.EQ.0.OR.M3.EQ.1)) GOTO 1
+      WRITE(IOUT,6) METHOD
+      STOP
+    1 IF((L0.EQ.0.OR.L0.EQ.1.OR.L0.EQ.2)
+     *.AND.(L1.EQ.0.OR.L1.EQ.1.OR.L1.EQ.2.OR.L1.EQ.3)) GOTO 2
+      WRITE(IOUT,7) LEVEL
+      STOP
+    2 C0=C0A
+      RATE=RATEA
+      IF(M1.EQ.4) DEFLOG=ALOG(DEFA)-ALOG(1.0-DEFA)
+      IF(M1.EQ.0) DEFLOG=ALOG(DEFA)
+      FLOOR=1.E-20
+      IF(L0.GE.1) WRITE(IOUT,5) M3,M2,M1,M0
+C BEGIN MEM
+      CALL MEMEX
+      IF(M2.EQ.0) CALL MEMA
+      IF(M2.EQ.1) CALL MEMAE
+      IF(M2.EQ.2) CALL MEMAM
+      IF(M2.EQ.3) CALL MEMAB
+      CALL MEMTR(24,7)
+      IF(M3.EQ.0.AND.M1.NE.3.AND.M1.NE.5) CALL MEMB
+      IF(M3.EQ.1.AND.M1.NE.3.AND.M1.NE.5) CALL MEMBW
+      IF(M3.EQ.0.AND.M1.EQ.3) CALL MEMBD
+      IF(M3.EQ.1.AND.M1.EQ.3) CALL MEMBX
+      IF(M1.EQ.5) CALL MEMO(1,4,5)
+      IF(M1.EQ.5) CALL MEMBO
+      CALL MEMOP(3,25)
+      CALL MEMOP(4,26)
+      IF (M0.GT.3) GOTO 4
+      CALL MEMC
+      CALL MEMTR(27,6)
+      IF(M3.EQ.0) CALL MEMD
+      IF(M3.EQ.1) CALL MEMDW
+      CALL MEMOP(5,28)
+      CALL MEME
+      GOTO 9
+    4 CALL MEMP(25,26,27,28,CBC,SBC,SBS)
+      CALL MEMTR(27,8)
+      CALL MEMTR(28,9)
+      IF(M3.EQ.0) CALL MEMQ(8,9,5,6,CBBC,SBBC,SBBS)
+      IF(M3.EQ.1) CALL MEMQW(8,9,5,6,CBBC,SBBC,SBBS)
+      CALL MEMOP(5,29)
+      CALL MEMOP(6,30)
+      IF(M0.EQ.4) CALL MEMR(29,30,CBBBC,SBBBC,SBBBS)
+      IF(M0.EQ.4) GOTO 9
+      CALL MEMP(29,30,31,32,CBBBC,SBBBC,SBBBS)
+      CALL MEMTR(31,12)
+      CALL MEMTR(32,13)
+      IF(M3.EQ.0) CALL MEMQ(12,13,10,11,C4C,S4C,S4S)
+      IF(M3.EQ.1) CALL MEMQW(12,13,10,11,C4C,S4C,S4S)
+      CALL MEMOP(10,33)
+      CALL MEMOP(11,34)
+      CALL MEMR(33,34,C5C,S5C,S5S)
+    9 CALL MEML
+      IF(M0.LE.3.AND.M3.EQ.0) CALL MEMF
+      IF(M0.EQ.4.AND.M3.EQ.0) CALL MEMG
+      IF(M0.EQ.6.AND.M3.EQ.0) CALL MEMH
+      IF(M0.EQ.3.AND.M3.EQ.1) CALL MEMFW
+      IF(M0.EQ.4.AND.M3.EQ.1) CALL MEMGW
+      IF(M0.EQ.6.AND.M3.EQ.1) CALL MEMHW
+C END MEM
+      RETURN
+    5 FORMAT(24H MEM 05.10.82  METHOD = ,4I1)
+    6 FORMAT(7H METHOD,I11,25H   NOT IMPLEMENTED. STOP.)
+    7 FORMAT(7H LEVEL ,I11,25H   NOT IMPLEMENTED. STOP.)
+      END
+C
+      SUBROUTINE MEMA
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      C=0.
+      DO 1  I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL MEMA1(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(24)))
+      CALL UWRITE(24)
+    1 CONTINUE
+      C=.5*C
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) C
+      RETURN
+    4 FORMAT(10H C    === ,1PE12.5)
+    5 FORMAT(7H   MemA)
+      END
+      SUBROUTINE MEMA1(E,D,F,GC)
+      REAL E(1),D(1),F(1),GC(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MK
+      R=F(I)-D(I)
+      GC(I)=R*E(I)
+    1 Z1=Z1+R*GC(I)
+      C = C+Z1
+      RETURN
+      END
+      SUBROUTINE MEMAB
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      REAL CN(100,10)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      C=0.
+      DO 1 L=1,10
+      DO 1 I=1,100
+    1 CN(I,L)=0.
+      DO 2 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL UREAD(39)
+      CALL MEMAB1(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(39)),CN)
+    2 CONTINUE
+      CALL UINIT
+      DO 3  L=1,10
+      DATA=1.E-35
+      DO 30 I=1,100
+   30 DATA=DATA+CN(I,L)
+      X=0.
+      DO 3 I=1,100
+      Y=.5*CN(I,L)/DATA
+      X=X+Y
+      CN(I,L)=UCMLNT(X)
+      X=X+Y
+    3 CONTINUE
+      DO 4 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL UREAD(39)
+      CALL MEMAB2(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(39)),
+     *            ST(KC(24)),CN)
+      CALL UWRITE(24)
+    4 CONTINUE
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,6) C
+      RETURN
+    6 FORMAT(10H C    === ,1PE12.5)
+    5 FORMAT(8H   MemAE)
+      END
+      SUBROUTINE MEMAB1(E,D,F,B,CN)
+      REAL E(1),D(1),F(1),B(1)
+      REAL CN(100,10)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DO 1 I=1,MK
+      L=B(I)
+      IF(L.LE.0) GOTO 1
+      IF(L.GT.10) L=10
+      R=(F(I)-D(I))*SQRT(E(I)*.5)
+      K=IFIX(51.+49.999*R/(1.+ABS(R)))
+      CN(K,L)=CN(K,L)+1.
+    1 CONTINUE
+      RETURN
+      END
+      SUBROUTINE MEMAB2(E,D,F,B,GC,CN)
+      REAL E(1),D(1),F(1),B(1),GC(1),CN(100,10)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 2 I=1,MK
+      GC(I)=0.
+      L=B(I)
+      IF(L.LE.0) GOTO 2
+      IF(L.GT.10) L=10
+      R=(F(I)-D(I))*SQRT(E(I)*.5)
+      K=IFIX(51.+49.999*R/(1.+ABS(R)))
+      R=R-CN(K,L)
+      Z1=Z1+R*R
+      GC(I)=R*SQRT(E(I)*2.)
+    2 CONTINUE
+      C = C+Z1
+      RETURN
+      END
+      SUBROUTINE MEMAE
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      REAL CN(200)
+      DATA=FLOAT(NK)*FLOAT(MK)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      C=0.
+      DO 1 I=1,200
+    1 CN(I)=0.
+      DO 2 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL MEMAE1(ST(KC(22)),ST(KC(21)),ST(KC(23)),CN)
+    2 CONTINUE
+      CALL UINIT
+      X=0.
+      DO 3 I=1,200
+      Y=.5*CN(I)/DATA
+      X=X+Y
+      CN(I)=UCMLNT(X)
+      X=X+Y
+    3 CONTINUE
+      DO 4 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL MEMAE2(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(24)),CN)
+      CALL UWRITE(24)
+    4 CONTINUE
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,6) C
+      RETURN
+    6 FORMAT(10H C    === ,1PE12.5)
+    5 FORMAT(8H   MemAE)
+      END
+      SUBROUTINE MEMAE1(E,D,F,CN)
+      REAL E(1),D(1),F(1),CN(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DO 1 I=1,MK
+      R=(F(I)-D(I))*SQRT(E(I)*.5)
+      K=IFIX(101.+99.999*R/(1.+ABS(R)))
+      CN(K)=CN(K)+1.
+    1 CONTINUE
+      RETURN
+      END
+      SUBROUTINE MEMAE2(E,D,F,GC,CN)
+      REAL E(1),D(1),F(1),GC(1),CN(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 2 I=1,MK
+      R=(F(I)-D(I))*SQRT(E(I)*.5)
+      K=IFIX(101.+99.999*R/(1.+ABS(R)))
+      R=R-CN(K)
+      Z1=Z1+R*R
+      GC(I)=R*SQRT(E(I)*2.)
+    2 CONTINUE
+      C = C+Z1
+      RETURN
+      END
+      SUBROUTINE MEMAM
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      DATA = FLOAT(NK)*FLOAT(MK)
+      DO 1 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL MEMAM1(ST(KC(22)),ST(KC(21)),ST(KC(23)))
+    1 CONTINUE
+      O1 = 36.*O1/(36.+DATA)
+      CALL UINIT
+      C=0.
+      DO 2  I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL MEMAM2(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(24)))
+      CALL UWRITE(24)
+    2 CONTINUE
+      C=.5*C
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) C
+      RETURN
+    4 FORMAT(10H C    === ,1PE12.5)
+    5 FORMAT(8H   MemAM)
+      END
+C
+      SUBROUTINE MEMAM1(E,D,F)
+      REAL E(1),D(1),F(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1 I=1,MK
+      R=F(I)-D(I)
+    1 Z1 = Z1+E(I)*R*R
+      O1 = O1+Z1
+      RETURN
+      END
+C
+      SUBROUTINE MEMAM2(E,D,F,GC)
+      REAL E(1),D(1),F(1),GC(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 2  I=1,MK
+      R=F(I)-D(I)
+      RR = E(I)*R*R
+      IF(RR.LE.O1) GOTO 1
+      R = R*(SQRT(O1)/SQRT(RR))
+      RR = O1
+    1 Z1 = Z1+RR
+    2 GC(I)=R*E(I)
+      C = C+Z1
+      RETURN
+      END
+C
+      SUBROUTINE MEMB
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      IF(M1.NE.1.AND.M1.NE.2) GOTO 3
+      SUMF=1.E-35
+      SUMFLF=0.
+      DO 2  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(7)
+      CALL MEMB0(ST(KC(1)),ST(KC(7)))
+    2 CONTINUE
+      DEFLOG=SUMFLF/SUMF
+      IF(M1.EQ.2) O1=O1/SUMF
+      IF(M1.EQ.1) O1=0.
+      CALL UINIT
+    3 SUMF=1.E-35
+      SS=1.E-35
+      SC=0.
+      CC=1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(7)
+      IF(M1.NE.4)
+     *CALL MEMB1(ST(KC(1)),ST(KC(7)),ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      IF(M1.EQ.4)
+     *CALL MEMB4(ST(KC(1)),ST(KC(7)),ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      CALL UWRITE(2)
+      CALL UWRITE(3)
+      CALL UWRITE(4)
+    1 CONTINUE
+      ALF=(SQRT(CC)/SQRT(SS))
+      TEST=1.-SC/(SQRT(CC)*SQRT(SS))
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) TEST
+      RETURN
+    4 FORMAT(10H TEST === ,F8.5)
+    5 FORMAT(7H   MemB)
+      END
+C
+      SUBROUTINE MEMB0(F,GC)
+      REAL F(1),GC(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1  I=1,MJ
+      IF(F(I).LE.0.) GOTO 1
+      Z1=Z1+F(I)
+      Z2=Z2+F(I)*ALOG(F(I))
+      Z3 = Z3+F(I)*GC(I)
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SUMFLF = SUMFLF+Z2
+      O1 = O1+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMB1(F,GC,F1,FGC,FGS)
+      REAL F(1),GC(1),F1(1),FGC(1),FGS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0.)
+                     GS=0.
+      IF(F(I).GT.0.) GS=DEFLOG-ALOG(F(I))
+      A = GC(I)-O1
+      X=F(I)*GS
+      Y=F(I)*A
+      Z1=Z1+F(I)
+      Z2=Z2+GS*X
+      Z3=Z3+GS*Y
+      Z4=Z4+A*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMB4(F,GC,F1,FGC,FGS)
+      REAL F(1),GC(1),F1(1),FGC(1),FGS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0.)
+                     GS=0.
+      IF(F(I).GT.0.) GS=DEFLOG-ALOG(F(I))+ALOG((1.0-F(I))+FLOOR)
+      A = GC(I)-O1
+      FF = F(I)*(1.0-F(I))
+      X = FF*GS
+      Y = FF*A
+      Z1=Z1+F(I)
+      Z2=Z2+GS*X
+      Z3=Z3+GS*Y
+      Z4=Z4+A*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMBD
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      SUMF=1.E-35
+      SS=1.E-35
+      SC=0.
+      CC=1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(7)
+      CALL UREAD(20)
+      CALL MEMBD1(ST(KC(1)),ST(KC(7)),ST(KC(20)),
+     *            ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      CALL UWRITE(2)
+      CALL UWRITE(3)
+      CALL UWRITE(4)
+    1 CONTINUE
+      ALF=(SQRT(CC)/SQRT(SS))
+      TEST=1.-SC/(SQRT(CC)*SQRT(SS))
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) TEST
+      RETURN
+    4 FORMAT(10H TEST === ,F8.5)
+    5 FORMAT(8H   MemBD)
+      END
+      SUBROUTINE MEMBD1(F,GC,DEF,F1,FGC,FGS)
+      REAL F(1),GC(1),F1(1),FGC(1),FGS(1),DEF(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0. .OR.DEF(I).LE.0.)
+                                     GS=0.
+      IF(F(I).GT.0..AND.DEF(I).GT.0.)GS=-ALOG(F(I)/DEF(I))
+      X=F(I)*GS
+      Y=F(I)*GC(I)
+      Z1=Z1+F(I)
+      Z2=Z2+GS*X
+      Z3=Z3+GS*Y
+      Z4=Z4+GC(I)*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMBO
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      SUMF=1.E-35
+      SS=1.E-35
+      SC=0.
+      CC=1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(4)
+      CALL UREAD(7)
+      CALL MEMBO1(ST(KC(1)),ST(KC(7)),ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      CALL UWRITE(2)
+      CALL UWRITE(3)
+    1 CONTINUE
+      ALF=(SQRT(CC)/SQRT(SS))
+      TEST=1.-SC/(SQRT(CC)*SQRT(SS))
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) TEST
+      RETURN
+    4 FORMAT(10H TEST === ,F8.5)
+    5 FORMAT(8H   MemBO)
+      END
+C
+      SUBROUTINE MEMBO1(F,GC,F1,FGC,FGS)
+      REAL F(1),GC(1),F1(1),FGC(1),FGS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0.)
+                     GS=0.
+      IF(F(I).GT.0.) GS=FGS(I)/F(I)
+      X=F(I)*GS
+      Y=F(I)*GC(I)
+      Z1=Z1+F(I)
+      Z2=Z2+GS*FGS(I)
+      Z3=Z3+GC(I)*FGS(I)
+      Z4=Z4+GC(I)*Y
+      F1(I)=F(I)
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+C
+      SUBROUTINE MEMBW
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      IF(M1.NE.1.AND.M1.NE.2) GOTO 3
+      SUMF=1.E-35
+      SUMFLF=0.
+      DO 2  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(19)
+      CALL UREAD(7)
+      CALL MEMBW0(ST(KC(1)),ST(KC(7)),ST(KC(19)))
+    2 CONTINUE
+      DEFLOG=SUMFLF/SUMF
+      IF(M1.EQ.2) O1 = O1/SUMF
+      IF(M1.EQ.1) O1 = 0.
+      CALL UINIT
+    3 SUMF=1.E-35
+      SS=1.E-35
+      SC=0.
+      CC=1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(7)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMBW1(ST(KC(1)),ST(KC(7)),ST(KC(19)),
+     *            ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      IF(M1.EQ.4)
+     *CALL MEMBW4(ST(KC(1)),ST(KC(7)),ST(KC(19)),ST(KC(2)),ST(KC(3)),
+     *ST(KC(4)))
+      CALL UWRITE(2)
+      CALL UWRITE(3)
+      CALL UWRITE(4)
+    1 CONTINUE
+      ALF=(SQRT(CC)/SQRT(SS))
+      TEST=1.-SC/(SQRT(CC)*SQRT(SS))
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) TEST
+      RETURN
+    4 FORMAT(10H TEST === ,F8.5)
+    5 FORMAT(8H   MemBW)
+      END
+      SUBROUTINE MEMBW0(F,GC,WT)
+      REAL F(1),GC(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1  I=1,MJ
+      IF(F(I).LE.0..OR.WT(I).LE.0.) GOTO 1
+      X=F(I)*WT(I)
+      Z1=Z1+X
+      Z2=Z2+X*ALOG(F(I))
+      Z3 = Z3+F(I)*GC(I)
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SUMFLF = SUMFLF+Z2
+      O1 = O1+Z3
+      RETURN
+      END
+      SUBROUTINE MEMBW1(F,GC,WT,F1,FGC,FGS)
+      REAL F(1),GC(1),WT(1),F1(1),FGC(1),FGS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0.)
+                     GS=0.
+      IF(F(I).GT.0.) GS=DEFLOG-ALOG(F(I))
+      A = GC(I)-O1*WT(I)
+      X=F(I)*GS
+      Y=F(I)*A
+      Z1=Z1+F(I)*WT(I)
+      Z2=Z2+GS*X*WT(I)
+      Z3=Z3+GS*Y
+      Y=Y/(WT(I)+1.E-35)
+      Z4=Z4+A*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMBW4(F,GC,WT,F1,FGC,FGS)
+      REAL F(1),GC(1),WT(1),F1(1),FGC(1),FGS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0.)
+                     GS=0.
+      IF(F(I).GT.0.) GS=DEFLOG-ALOG(F(I))+ALOG((1.0-F(I))+FLOOR)
+      A = GC(I)-O1*WT(I)
+      FF = F(I)*(1.0-F(I))
+      X = FF*GS
+      Y = FF*A
+      Z1=Z1+F(I)*WT(I)
+      Z2=Z2+GS*X*WT(I)
+      Z3=Z3+GS*Y
+      Y=Y/(WT(I)+1.E-35)
+      Z4=Z4+A*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMBX
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      SUMF=1.E-35
+      SS=1.E-35
+      SC=0.
+      CC=1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(1)
+      CALL UREAD(7)
+      CALL UREAD(19)
+      CALL UREAD(20)
+      CALL MEMBX1(ST(KC(1)),ST(KC(7)),ST(KC(19)),ST(KC(20)),
+     *            ST(KC(2)),ST(KC(3)),ST(KC(4)))
+      CALL UWRITE(2)
+      CALL UWRITE(3)
+      CALL UWRITE(4)
+    1 CONTINUE
+      ALF=(SQRT(CC)/SQRT(SS))
+      TEST=1.-SC/(SQRT(CC)*SQRT(SS))
+      CALL UINIT
+      IF(L1.GE.1) WRITE(IOUT,4) TEST
+      RETURN
+    4 FORMAT(10H TEST === ,F8.5)
+    5 FORMAT(8H   MemBX)
+      END
+      SUBROUTINE MEMBX1(F,GC,WT,DEF,F1,FGC,FGS)
+      REAL F(1),GC(1),WT(1),F1(1),FGC(1),FGS(1),DEF(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      Z4 = 0.
+      DO 1  I=1,MJ
+C     IF(F(I).LE.0. .OR.DEF(I).LE.0.)
+                                     GS=0.
+      IF(F(I).GT.0..AND.DEF(I).GT.0.)GS=-ALOG(F(I)/DEF(I))
+      X=F(I)*GS
+      Y=F(I)*GC(I)
+      Z1=Z1+F(I)*WT(I)
+      Z2=Z2+GS*X*WT(I)
+      Z3=Z3+GS*Y
+      Y=Y/(WT(I)+1.E-35)
+      Z4=Z4+GC(I)*Y
+      F1(I)=F(I)
+      FGS(I)=X
+      FGC(I)=Y
+    1 CONTINUE
+      SUMF = SUMF+Z1
+      SS = SS+Z2
+      SC = SC+Z3
+      CC = CC+Z4
+      RETURN
+      END
+      SUBROUTINE MEMC
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      SBQ=0.
+      QBQ=0.
+      SBS=0.
+      DO 1  I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(25)
+      CALL UREAD(26)
+      CALL MEMC1(ST(KC(22)),ST(KC(25)),ST(KC(26)),ST(KC(27)))
+      CALL UWRITE(27)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemC)
+      END
+      SUBROUTINE MEMC1(E,FGC,FGS,BFGQ)
+      REAL E(1),FGC(1),FGS(1),BFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1  I=1,MK
+      BFGS=E(I)*FGS(I)
+      FGQ=ALF*FGS(I)-FGC(I)
+      X=E(I)*FGQ
+      Z1=Z1+FGS(I)*X
+      Z2=Z2+FGQ*X
+      Z3=Z3+BFGS*FGS(I)
+      BFGQ(I)=X
+    1 CONTINUE
+      SBQ = SBQ+Z1
+      QBQ = QBQ+Z2
+      SBS = SBS+Z3
+      RETURN
+      END
+      SUBROUTINE MEMD
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      IF(M1.NE.2) GOTO 3
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(6)
+      CALL MEMD0(ST(KC(2)),ST(KC(6)))
+    2 CONTINUE
+      O1 = O1/SUMF
+      CALL UINIT
+    3 QBBQ = 1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(6)
+      IF(M1.NE.4)
+     *CALL MEMD1(ST(KC(2)),ST(KC(6)),ST(KC(5)))
+      IF(M1.EQ.4)
+     *CALL MEMD4(ST(KC(2)),ST(KC(6)),ST(KC(5)))
+      CALL UWRITE(5)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemD)
+      END
+      SUBROUTINE MEMD0(F,BFGQ)
+      REAL F(1),BFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      DO 1 I=1,MJ
+      Z1 = Z1+F(I)*BFGQ(I)
+    1 CONTINUE
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMD1(F,BFGQ,FBFGQ)
+      REAL F(1),BFGQ(1),FBFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      A = BFGQ(I) -O1
+      X=F(I)*A
+      Z1=Z1+X*A
+      FBFGQ(I)=X
+    1 CONTINUE
+      QBBQ = QBBQ+Z1
+      RETURN
+      END
+      SUBROUTINE MEMD4(F,BFGQ,FBFGQ)
+      REAL F(1),BFGQ(1),FBFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      A = BFGQ(I) -O1
+      X=F(I)*A*(1.0-F(I))
+      Z1=Z1+X*A
+      FBFGQ(I)=X
+    1 CONTINUE
+      QBBQ = QBBQ+Z1
+      RETURN
+      END
+      SUBROUTINE MEMDW
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      IF(M1.NE.2) GOTO 3
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(6)
+      CALL MEMDW0(ST(KC(2)),ST(KC(6)))
+    2 CONTINUE
+      O1 = O1/SUMF
+      CALL UINIT
+    3 QBBQ = 1.E-35
+      DO 1  I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(6)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMDW1(ST(KC(2)),ST(KC(6)),ST(KC(19)),ST(KC(5)))
+      IF(M1.EQ.4)
+     *CALL MEMDW4(ST(KC(2)),ST(KC(6)),ST(KC(19)),ST(KC(5)))
+      CALL UWRITE(5)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(8H   MemDW)
+      END
+      SUBROUTINE MEMDW0(F,BFGQ)
+      REAL F(1),BFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      DO 1 I=1,MJ
+      Z1 = Z1+F(I)*BFGQ(I)
+    1 CONTINUE
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMDW1(F,BFGQ,WT,FBFGQ)
+      REAL F(1),BFGQ(1),WT(1),FBFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      A = BFGQ(I)-O1*WT(I)
+      X=F(I)*A/(WT(I)+1.E-35)
+      Z1=Z1+X*A
+      FBFGQ(I)=X
+    1 CONTINUE
+      QBBQ = QBBQ+Z1
+      RETURN
+      END
+      SUBROUTINE MEMDW4(F,BFGQ,WT,FBFGQ)
+      REAL F(1),BFGQ(1),WT(1),FBFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      A = BFGQ(I)-O1*WT(I)
+      X=F(I)*(1.0-F(I))*A/(WT(I)+1.E-35)
+      Z1=Z1+X*A
+      FBFGQ(I)=X
+    1 CONTINUE
+      QBBQ = QBBQ+Z1
+      RETURN
+      END
+      SUBROUTINE MEME
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      SBBQ=0.
+      QBBBQ=0.
+      DO 1  I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(26)
+      CALL UREAD(28)
+      CALL MEME1(ST(KC(22)),ST(KC(26)),ST(KC(28)))
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemE)
+      END
+      SUBROUTINE MEME1(E,FGS,FBFGQ)
+      REAL E(1),FGS(1),FBFGQ(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      Z2 = 0.
+      DO 1  I=1,MK
+      BFBFGQ=E(I)*FBFGQ(I)
+      Z1=Z1+FGS(I)*BFBFGQ
+      Z2=Z2+BFBFGQ*FBFGQ(I)
+    1 CONTINUE
+      SBBQ = SBBQ+Z1
+      QBBBQ = QBBBQ+Z2
+      RETURN
+      END
+      SUBROUTINE MEMEX
+C Model the ACTUAL behaviour of the experiment.
+C LINEAR experiments are treated by a call to the
+C  differential response routine OPUS.
+C NONLINEAR experiments should transform an image on file 1
+C  to mock data on file 23, and may possibly need to adjust
+C  file 21, file 22, and the required value of C.
+      CALL MEMOP(1,23)
+      RETURN
+      END
+      SUBROUTINE MEMF
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 = 2
+      IF(M1.EQ.2) I1 =2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      IF(M1.NE.4)
+     *CALL MEMF1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)))
+      IF(M1.EQ.4)
+     *CALL MEMF4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMF2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemF)
+      END
+      SUBROUTINE MEMF1(NEW,OLD,A1,A2,A3)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I) , -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMF2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMF4(NEW,OLD,A1,A2,A3)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+X, 0.2*X, FLOOR )
+      X = AMIN1(Y,0.8+0.2*X, 1.0)
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMFW
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 = 2
+      IF(M1.EQ.2) I1 =2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMFW1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(19)))
+      IF(M1.EQ.4)
+     *CALL MEMFW4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     * ST(KC(19)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMFW2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(8H   MemFW)
+      END
+      SUBROUTINE MEMFW1(NEW,OLD,A1,A2,A3,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I) , -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMFW2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMFW4(NEW,OLD,A1,A2,A3,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+X, 0.2*X, FLOOR)
+      X = AMIN1(Y, 0.8+0.2*X, 1.0)
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMG
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 =  2
+      IF(M1.EQ.2) I1=2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      CALL UREAD(6)
+      IF(M1.NE.4)
+     *CALL MEMG1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)))
+      IF(M1.EQ.4)
+     *CALL MEMG4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMG2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemG)
+      END
+      SUBROUTINE MEMG1(NEW,OLD,A1,A2,A3,A4)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I) , -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMG2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMG4(NEW,OLD,A1,A2,A3,A4)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+X, 0.2*X, FLOOR)
+      X = AMIN1(Y, 0.8+0.2*X, 1.0)
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMGW
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 =  2
+      IF(M1.EQ.2) I1=2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      CALL UREAD(6)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMGW1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)),ST(KC(19)))
+      IF(M1.EQ.4) CALL MEMGW4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),
+     * ST(KC(4)),ST(KC(5)),ST(KC(6)),ST(KC(19)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMGW2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(8H   MemGW)
+      END
+      SUBROUTINE MEMGW1(NEW,OLD,A1,A2,A3,A4,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I) , -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMGW2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMGW4(NEW,OLD,A1,A2,A3,A4,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+X, 0.2*X, FLOOR)
+      X = AMIN1(Y, 0.8+0.2*X, 1.0)
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMH
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 = 2
+      IF(M1.EQ.2) I1=2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      CALL UREAD(6)
+      CALL UREAD(10)
+      CALL UREAD(11)
+      IF(M1.NE.4)
+     *CALL MEMH1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)),ST(KC(10)),ST(KC(11)))
+      IF(M1.EQ.4)
+     *CALL MEMH4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)),ST(KC(10)),ST(KC(11)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMH2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemH)
+      END
+      SUBROUTINE MEMH1(NEW,OLD,A1,A2,A3,A4,A5,A6)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),A5(1),A6(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+W5*A5(I)+W6*A6(I) ,
+     * -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMH2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMH4(NEW,OLD,A1,A2,A3,A4,A5,A6)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),A5(1),A6(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1(W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+W5*A5(I)+W6*A6(I)+X,
+     * 0.2*X, FLOOR)
+      X = AMIN1(Y, 0.8+0.2*X, 1.0)
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMHW
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 = 2
+      IF(M1.EQ.2) I1=2
+      IF(M1.EQ.2) I2=1
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      CALL UREAD(4)
+      CALL UREAD(5)
+      CALL UREAD(6)
+      CALL UREAD(10)
+      CALL UREAD(11)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMHW1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),ST(KC(5)),
+     *ST(KC(6)),ST(KC(10)),ST(KC(11)),ST(KC(19)))
+      IF(M1.EQ.4) CALL MEMHW4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)),ST(KC(4)),
+     *ST(KC(5)),ST(KC(6)),ST(KC(10)),ST(KC(11)),ST(KC(19)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMHW2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(8H   MemHW)
+      END
+      SUBROUTINE MEMHW1(NEW,OLD,A1,A2,A3,A4,A5,A6,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),A5(1),A6(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+W5*A5(I)+W6*A6(I) ,
+     * -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMHW2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMHW4(NEW,OLD,A1,A2,A3,A4,A5,A6,WT)
+      REAL NEW(1),OLD(1),A1(1),A2(1),A3(1),A4(1),A5(1),A6(1),WT(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1(W1*A1(I)+W2*A2(I)+W3*A3(I)+W4*A4(I)+W5*A5(I)+W6*A6(I)+X,
+     * 0.2*X, FLOOR)
+      X = AMIN1(Y, 0.8+0.2*X, 1.0)
+      Z1 = Z1+X*WT(I)
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMI
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 1.E-35
+      I1 = 1
+      I2 = 2
+      IF(M1.EQ.2) I1 =2
+      IF(M1.EQ.2) I2=1
+      W1=(C0-C)/(CC+1.E-35)
+      W2=SQRT(RATE*SUMF/(CC+1.E-35))
+      W1=AMAX1(W1,-W2)
+      W1=AMIN1(W1,W2)
+      D2S=W1*W1*CC/SUMF
+      CNEW=C+W1*CC
+      IF(L1.GE.2) WRITE(IOUT,6) D2S,W1
+      IF(L1.GE.1) WRITE(IOUT,7) CNEW
+    6 FORMAT(8H DW     ,1PE13.5,E13.5)
+    7 FORMAT(10H CNEW ... ,1PE12.5)
+      DO 1  I=1,NJ
+      CALL UREAD(I2)
+      CALL UREAD(3)
+      IF(M1.NE.4)
+     *CALL MEMI1(ST(KC(I1)),ST(KC(I2)),ST(KC(3)))
+      IF(M1.EQ.4)
+     *CALL MEMI4(ST(KC(I1)),ST(KC(I2)),ST(KC(3)))
+      CALL UWRITE(I1)
+    1 CONTINUE
+      CALL UINIT
+      IF(M1.NE.2) RETURN
+      O1 = SUMF/O1
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL MEMI2(ST(KC(1)),ST(KC(2)))
+      CALL UWRITE(1)
+    2 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemI)
+      END
+      SUBROUTINE MEMI1(NEW,OLD,A1)
+      REAL NEW(1),OLD(1),A1(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I) , -0.8*X )
+      X=AMAX1( X+Y , FLOOR )
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMI2(NEW,OLD)
+      REAL NEW(1),OLD(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SQB,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      DO 1 I=1,MJ
+    1 NEW(I) = O1*OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMI4(NEW,OLD,A1)
+      REAL NEW(1),OLD(1),A1(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      Z1 = 0.
+      DO 1  I=1,MJ
+      X=OLD(I)
+      IF(X.LE.0.) GOTO 1
+      Y=AMAX1( W1*A1(I)+X, 0.2*X, FLOOR )
+      X = AMIN1(Y,0.8+0.2*X, 1.0)
+      Z1 = Z1+X
+    1 NEW(I)=X
+      O1 = O1+Z1
+      RETURN
+      END
+      SUBROUTINE MEMJ(M,N)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      DO 1  I=1,NJ
+      CALL UREAD(M)
+      CALL MEMJ1(ST(KC(M)),ST(KC(N)))
+      CALL UWRITE(N)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+      END
+      SUBROUTINE MEMJ1(OLD,NEW)
+      REAL OLD(1),NEW(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DO 1  I=1,MJ
+    1 NEW(I)=OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEMK(M,N)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      DO 1  I=1,NK
+      CALL UREAD(M)
+      CALL MEMK1(ST(KC(M)),ST(KC(N)))
+      CALL UWRITE(N)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+      END
+      SUBROUTINE MEMK1(OLD,NEW)
+      REAL OLD(1),NEW(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DO 1  I=1,MK
+    1 NEW(I)=OLD(I)
+      RETURN
+      END
+      SUBROUTINE MEML
+      DOUBLE PRECISION GSD(6),GCD(6),SDD(6,6),CDD(6,6),W(6)
+      DOUBLE PRECISION EVAL(6),VECU(6,6)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      IF(L0.GE.1) WRITE(IOUT,9900)
+      NSRCH = M0
+      CALL MEML0(GSD,GCD,SDD,CDD)
+      CALL MEMV(CDD,SDD,EVAL,VECU,NDIM,NSRCH,3.E-5,3.E-16,PEN)
+      CALL MEML1( C,C0,SUMF,RATE,NSRCH,1.E-6,3.E-16,IOUT,L1,CNEW,
+     * GSD,GCD,SDD,CDD,W,EVAL,VECU,NDIM,PEN)
+      W1=W(1)
+      W2=W(2)
+      W3=W(3)
+      IF(NSRCH.EQ.2) W3=0.
+      IF(NSRCH.GE.4) W4=W(4)
+      IF(NSRCH.GT.4) W5=W(5)
+      IF(NSRCH.GT.4) W6=W(6)
+      RETURN
+ 9900 FORMAT(10H   Control)
+      END
+      SUBROUTINE MEML0(GSD,GCD,SDD,CDD)
+      DOUBLE PRECISION GSD(6),GCD(6),SDD(6,6),CDD(6,6),W(6)
+      DOUBLE PRECISION EVAL(6),VECU(6,6)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      NSRCH = M0
+      IF(NSRCH.GT.3) GOTO 4
+      CBQ=ALF*SBQ-QBQ
+      SBC=ALF*SBS-SBQ
+      CBC=ALF*SBC-CBQ
+      CBBQ=ALF*SBBQ-QBBQ
+      SDD(1,1)=CC
+      SDD(1,2)=SC
+      SDD(1,3)=CBQ
+      SDD(2,2)=SS
+      SDD(2,3)=SBQ
+      SDD(3,3)=QBBQ
+      CDD(1,1)=CBC
+      CDD(1,2)=SBC
+      CDD(1,3)=CBBQ
+      CDD(2,2)=SBS
+      CDD(2,3)=SBBQ
+      CDD(3,3)=QBBBQ
+      GOTO 7
+    4 SDD(1,1) = CC
+      SDD(1,2)  = SC
+      SDD(1,3) = CBC
+      SDD(1,4) = SBC
+      SDD(2,2) = SS
+      SDD(2,3) = SBC
+      SDD(2,4) = SBS
+      SDD(3,3) = CBBC
+      SDD(3,4) = SBBC
+      SDD(4,4) = SBBS
+      CDD(1,1) = CBC
+      CDD(1,2) = SBC
+      CDD(1,3) = CBBC
+      CDD(1,4) = SBBC
+      CDD(2,2) = SBS
+      CDD(2,3) = SBBC
+      CDD(2,4) = SBBS
+      CDD(3,3) = CBBBC
+      CDD(3,4) = SBBBC
+      CDD(4,4) = SBBBS
+      IF (NSRCH.EQ.4) GOTO 7
+      SDD(1,5) = CBBC
+      SDD(1,6) = SBBC
+      SDD(2,5) = SBBC
+      SDD(2,6) = SBBS
+      SDD(3,5) = CBBBC
+      SDD(3,6) = SBBBC
+      SDD(4,5) = SBBBC
+      SDD(4,6) = SBBBS
+      SDD(5,5) = C4C
+      SDD(5,6) = S4C
+      SDD(6,6) = S4S
+      CDD(1,5) = CBBBC
+      CDD(1,6) = SBBBC
+      CDD(2,5) = SBBBC
+      CDD(2,6) = SBBBS
+      CDD(3,5) = C4C
+      CDD(3,6) = S4C
+      CDD(4,5) = S4C
+      CDD(4,6) = S4S
+      CDD(5,5) = C5C
+      CDD(5,6) = S5C
+      CDD(6,6) = S5S
+    7 DO 9 I=1,NSRCH
+      DO 8 J=I,NSRCH
+      SDD(J,I) = SDD(I,J)
+    8 CDD(J,I) = CDD(I,J)
+      GSD(I) = SDD(I,2)
+    9 GCD(I) = SDD(I,1)
+C OPTIONAL DIAGNOSTICS
+      IF(L1.LT.3) GOTO 1
+      WRITE(IOUT,9910) (GSD(J),J=1,NSRCH)
+      WRITE(IOUT,9911) (GCD(J),J=1,NSRCH)
+      WRITE(IOUT,9914)
+      DO 2  I=1,NSRCH
+    2 WRITE(IOUT,9912) (SDD(I,J),J=1,NSRCH)
+      WRITE(IOUT,9914)
+      DO 3  I=1,NSRCH
+    3 WRITE(IOUT,9913) (CDD(I,J),J=1,NSRCH)
+      WRITE(IOUT,9914)
+    1 RETURN
+ 9910 FORMAT(/7H  GSD  ,1PD14.6,5D14.6)
+ 9911 FORMAT(/7H  GCD  ,1PD14.6,5D14.6)
+ 9912 FORMAT(7H  SDD  ,1PD14.6,5D14.6)
+ 9913 FORMAT(7H  CDD  ,1PD14.6,5D14.6)
+ 9914 FORMAT(1H )
+      END
+      SUBROUTINE MEML1(CA,C0A,SUMFA,RATEA,NSRCH,ERRA,EPS4A,IOUT,
+     *L1,CNEWA,GSD0,GCD0,SDD,CDD,W,EVAL,VECU,NDIM,PENA)
+C PENALTY CURLS THE STATISTIC UPWARDS, NOT THE ENTROPY
+C EXIT WITH W = COMPONENTS OF DELTA(F)
+      DOUBLE PRECISION DABS,DSQRT,ERR,EPS1,EPS2,EPS3,EPS4,AL,AL0,ALMIN
+      DOUBLE PRECISION A1,A2,AA,AAA,DA,C,C0,CMIN,CAIM,CNEW,D2S,PEN0
+      DOUBLE PRECISION CCMIN,CCMAX
+      DOUBLE PRECISION SUMF,RATE,RATES,CC,SS,EE,PEN,P1,P2,PP,X,CPEN,CMAX
+      DOUBLE PRECISION GSD0(6),GCD0(6),GSD(6),GCD(6),SDD(6,6)
+      DOUBLE PRECISION CDD(6,6),E(6)
+      DOUBLE PRECISION EVAL(6),VECU(6,6),XU(6),W(6),GQD(6)
+      C=CA
+      C0=C0A
+      SUMF=SUMFA
+      RATE=RATEA
+      PEN0=PENA
+      ERR=ERRA
+      EPS4=EPS4A
+      EPS2=DSQRT(EPS4)
+      EPS1=DSQRT(EPS2)
+      EPS3=EPS1*EPS2
+      RATES=RATE*SUMF
+      IF( NSRCH.GE.1 .AND. NSRCH.LE.6 )  GOTO 10
+      WRITE(IOUT,9000) NSRCH
+      STOP
+   10 CONTINUE
+C
+CHAPTER 1.  SUBSPACE STRUCTURES
+C REWRITE GCD,GSD IN EIGENVECTOR COORDINATES
+      DO 11  K1=1,NDIM
+      GCD(K1)=0.0D0
+      GSD(K1)=0.0D0
+      DO 11  K2=1,NSRCH
+      GCD(K1)=GCD(K1)+GCD0(K2)*VECU(K2,K1)
+   11 GSD(K1)=GSD(K1)+GSD0(K2)*VECU(K2,K1)
+C CDD IS NOW DIAGONAL(EVAL), SDD IS NOW UNIT
+C SET AL0
+      CC=0.0D0
+      SS=EPS2*SUMF
+      EE=1.0D-35
+      X=0.0D0
+      DO 12  K=1,NDIM
+      X=X+1.0D0
+      CC=CC+GCD(K)*GCD(K)
+      SS=SS+GSD(K)*GSD(K)
+   12 EE=EE+(EVAL(K)/(X*X))**2
+      AL0=DSQRT(CC)/DSQRT(SS)+DSQRT(EPS2*EE)
+      EE=DSQRT(EE)
+C SET CAIM
+      CAIM=C0
+      IF( EVAL(1).LT.EPS3*AL0 )  GOTO 14
+      CMIN=C
+      DO 13  K=1,NDIM
+   13 CMIN=CMIN-0.5D0*GCD(K)*GCD(K)/EVAL(K)
+      CMIN=(2.0D0*CMIN+C)/3.0D0
+      IF( CMIN.GT.C0 )  CAIM=CMIN
+   14 CONTINUE
+C TWEAK GCD(1) TO BREAK SYMMETRY.  EPS3 IS DETECTABLE BY THE CHOP
+      X=EPS3*AL0*DSQRT(RATES)
+      IF( DABS(EVAL(1)*GSD(1)+GCD(1)).GE.X )  GOTO 20
+      GCD(1)=X-EVAL(1)*GSD(1)
+C
+C CONTROL OF PRECISION IS IMPORTANT
+C THE BINARY CHOP LIMIT FOR AL GIVES FULL ARITHMETIC ACCURACY
+C THE MATRIX B IS INVERTED BY DIVIDING BY ITS (SUBSPACE) EIGENVALUES,
+C  NAMELY  (AL+ALMIN)+E(K)
+C HERE AL CAN BE SMALL, BUT X=ALMIN+E(K) CAN BE EXACTLY 0,
+C  SO X MUST BE EVALUATED FIRST
+C
+CHAPTER 2. FIND SMALLEST ACCEPTABLE PENALTY >= PEN0 AND ITS AL
+   20 PEN=0.0D0
+      P1=0.0D0
+      P2=1.0D30
+      AAA=0.0D0
+      PP=0.0D0
+      GOTO 210
+   21 IF( P2-P1.LE.EPS1*PEN )  GOTO 30
+      PEN=(2.0D0*P1+1.0D0+P1/P2)/(1.0D0+(2.0D0+P1)/P2)
+C REVISE EIGENVALUES
+C SET ALMIN
+  210 DO 212  K=1,NDIM
+  212 E(K)=EVAL(K)+PEN0+PEN*EE*0.1D0
+      ALMIN=0.0D0
+      IF( E(1).LT.0.0D0 )  ALMIN=-E(1)
+C SET RANGE FOR ALPHA ITERATION
+      CMIN=CAIM
+      CMAX=C
+      JUMP=1
+      IF(CAIM.LT.C) GOTO 22
+      CMIN=C
+      CMAX=CAIM
+      JUMP=2
+C START AL ITERATION
+   22 AL=AL0
+      A1=AL*EPS4
+      A2=AL/EPS4
+      DA=(A2-A1)*1.01D0
+      AA=0.0D0
+   23 IF( A2-A1.GE.DA )  GOTO 28
+      DA=A2-A1
+      AL=(2.0D0*A1*(A2/AL)+A1+A2)/(2.0D0+(A1+A2)/AL)
+C SOLVE B(..)X(.)=GQ(.)
+C NEW STATISTICS AND D2S
+      D2S=0.0D0
+      CPEN=C
+      CNEW=C
+      DO 24  K=1,NDIM
+      X=ALMIN+E(K)
+      GQD(K)=(AL+ALMIN)*GSD(K)-GCD(K)
+      XU(K)=GQD(K)/(X+AL)
+      D2S=D2S+XU(K)*XU(K)
+      CPEN=CPEN+XU(K)*(GCD(K)+0.5D0*E(K)*XU(K))
+      CNEW=CNEW+XU(K)*(GCD(K)+0.5D0*EVAL(K)*XU(K))
+   24 CONTINUE
+C PRIMARY ALPHA CONTROL (MONOTONIC GUARANTEE)
+      IF( CPEN.GT.CMAX )  GOTO 25
+C     IF( CPEN.LT.CMIN )  GOTO 26
+C SECONDARY ALPHA CONTROL (GUARANTEES NOT ESSENTIAL)
+      IF( CNEW.LT.CMIN )  GOTO 26
+      IF( D2S.GT.RATES )  GOTO(26,25),JUMP
+      GOTO(25,26),JUMP
+C REDUCE ALPHA
+   25 A2=AL
+      IF(D2S.LE.RATES) AA=AL
+      GOTO  23
+C INCREASE ALPHA
+   26 A1=AL
+      GOTO 23
+C ITERATE PENALTY
+   28 IF( AA.EQ.A2 )  GOTO 29
+C PENALTY TOO SMALL
+      P1=PEN
+      GOTO 21
+C PENALTY LARGE ENOUGH.  DECREASE AND STORE IT
+   29 AAA=AA
+      CCMIN=CMIN
+      CCMAX=CMAX
+      PP=PEN
+      P2=PEN
+      GOTO 21
+C EXIT WITH SMALLEST PEN ALLOWING CNEW & CPEN BETWEEN CAIM & C
+C AND SATISFYING D2S<RATES
+C EXIT WITH AAA = CORRESPONDING AL
+C
+CHAPTER 3.  RETURN TO SEARCH DIRECTION COORDINATES
+C RECONSTITUTE XU
+   30 DO 302  K=1,NDIM
+  302 E(K)=EVAL(K)+PEN0+PP*EE*0.1D0
+      ALMIN=0.0D0
+      IF( E(1).LT.0.0D0 )  ALMIN=-E(1)
+      D2S=0.0D0
+      CPEN=C
+      CNEW=C
+      DO 31  K=1,NDIM
+      X=ALMIN+E(K)
+      GQD(K)=(AAA+ALMIN)*GSD(K)-GCD(K)
+      XU(K)=GQD(K)/(X+AAA)
+      D2S=D2S+XU(K)*XU(K)
+      CPEN=CPEN+XU(K)*(GCD(K)+0.5D0*E(K)*XU(K))
+   31 CNEW=CNEW+XU(K)*(GCD(K)+0.5D0*EVAL(K)*XU(K))
+C  REWRITE XU IN SEARCH DIRECTION COORDINATES
+      DO 33 K1=1,NSRCH
+      W(K1)=0.0D0
+      DO 33 K2=1,NDIM
+   33 W(K1)=W(K1)+VECU(K1,K2)*XU(K2)
+      CC=C
+      DO 36  K1=1,NSRCH
+      X=0.0D0
+      DO 35  K2=1,NSRCH
+   35 X=X+CDD(K1,K2)*W(K2)
+   36 CC=CC+(GCD0(K1)+0.5D0*X)*W(K1)
+      CNEWA=CC
+      RATEA=D2S/SUMF
+C OPTIONAL DIAGNOSTICS
+      IF(L1.EQ.0) RETURN
+      IF(L1.EQ.1) GOTO 38
+      D2S=D2S/SUMF
+      PP = PP*EE*0.1D0
+      WRITE(IOUT,9900) D2S,CNEW,AAA,PP,PEN0
+      WRITE(IOUT,9901) CCMIN,CNEW,CPEN,CCMAX,C
+      WRITE(IOUT,9902) (SDD(K,K),K=1,NSRCH)
+      WRITE(IOUT,9903) (EVAL(K),K=1,NDIM)
+      WRITE(IOUT,9904) (GSD(K),K=1,NDIM)
+      WRITE(IOUT,9905) (GCD(K),K=1,NDIM)
+      WRITE(IOUT,9906)  (GQD(K),K=1,NDIM)
+      WRITE(IOUT,9907)  (XU(K),K=1,NDIM)
+      WRITE(IOUT,9908) (W(K),K=1,NSRCH)
+      WRITE(IOUT,9910)
+   38 WRITE(IOUT,9909) CNEWA
+      RETURN
+ 9000 FORMAT(16H INVALID NSRCH =,I10)
+ 9900 FORMAT(8H DCAPE  ,1PD13.5,4D13.5)
+ 9901 FORMAT( 8H <<<<C  ,1PD13.5,4D13.5)
+ 9902 FORMAT(7H  A.A  ,1PD10.2,5D10.2)
+ 9903 FORMAT(7H  EVAL ,1PD10.2,5D10.2)
+ 9904 FORMAT(7H  GSD  ,1PD10.2,5D10.2)
+ 9905 FORMAT(7H  GCD  ,1PD10.2,5D10.2)
+ 9906 FORMAT(7H  GQD  ,1PD10.2,5D10.2)
+ 9907 FORMAT(7H  XU   ,1PD10.2,5D10.2)
+ 9908 FORMAT(7H  W    ,1PD10.2,5D10.2)
+ 9909 FORMAT(10H CNEW === ,1PE12.5)
+ 9910 FORMAT(1H )
+      END
+      SUBROUTINE MEMO(J,K,L)
+C Set file K = DELsquared(file J) with periodic boundary conditions.
+C DELsquared(f) = MEAN(f(neighbour)-f) over 2*NDIM neighbours.
+C Buffer L is used as auxiliary storage.
+C Not compatible with weights.
+C Requres MJ >= 2  (NDIM=1)
+C         MJ/ND(1) = Integer >= 2  (NDIM=2)
+C         MJ/(ND(1)*ND(2)) = Integer >= 2  (NDIM=3)
+      COMMON /MECOMS/ ST(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     *IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMF/ IFT,NDIM,ND(3)
+      IF(L0.GE.1) WRITE(IOUT,4)
+      M=1
+      IF(NDIM.GT.1) M=ND(1)
+      IF(NDIM.GT.2) M=ND(1)*ND(2)
+      X=0.5/FLOAT(NDIM)
+      N=MJ/M
+      NN=MJ/ND(1)
+      IF(N.LT.2) STOP
+      DO 2 I=1,NJ
+      CALL UREAD(J)
+    2 CONTINUE
+      CALL MEMO1(ST(KC(J)),ST(KB(L)),M,N)
+      CALL URESET(J)
+      CALL UREAD(J)
+      CALL MEMO2(ST(KC(J)),ST(KB(L)),M,N)
+      DO 1 I=1,NJ
+      CALL MEMO3(ST(KC(J)),ST(KC(K)),ST(KB(L)),M,N)
+      IF(NDIM.GT.1) CALL MEMO5(ST(KC(J)),ST(KC(K)),1,ND(1),NN)
+      IF(NDIM.GT.2) CALL MEMO5(ST(KC(J)),ST(KC(K)),ND(1),ND(2),N)
+      IF(I.EQ.NJ) CALL URESET(J)
+      CALL UREAD(J)
+      CALL MEMO4(ST(KC(J)),ST(KC(K)),ST(KB(L)),X,M,N,MJ)
+      CALL UWRITE(K)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    4 FORMAT(7H   MemO)
+      END
+C
+      SUBROUTINE MEMO1(F,G,M,N)
+      REAL F(1),G(1)
+      J=(N-1)*M
+      L1=J+1
+      L2=J+M
+      DO 1 L=L1,L2
+      G(L)=F(L)
+    1 CONTINUE
+      RETURN
+      END
+C
+      SUBROUTINE MEMO2(F,G,M,N)
+      REAL F(1),G(1)
+      J=(N-1)*M+1
+      DO 1 L=1,M
+      G(J)=F(L)-G(J)
+      J=J+1
+    1 CONTINUE
+      RETURN
+      END
+C
+      SUBROUTINE MEMO3(F,D,G,M,N)
+      REAL F(1),D(1),G(1)
+      LL=(N-1)*M
+      K=M+1
+      DO 1 L=1,LL
+      G(L)=F(K)-F(L)
+      K=K+1
+    1 CONTINUE
+      K=LL+1
+      DO 2 L=1,M
+      D(L)=G(L)-G(K)
+      K=K+1
+    2 CONTINUE
+      IF(N.EQ.2) GOTO 4
+      K=M+1
+      DO 3 L=1,LL
+      D(K)=G(K)-G(L)
+      K=K+1
+    3 CONTINUE
+    4 L1=LL+1
+      L2=LL+M
+      DO 5 L=L1,L2
+      G(L)=F(L)
+      D(L)=0.
+    5 CONTINUE
+      RETURN
+      END
+C
+      SUBROUTINE MEMO4(F,D,G,X,M,N,MJ)
+      REAL F(1),D(1),G(1)
+      J=(N-1)*M+1
+      K=J-M
+      DO 1 L=1,M
+      G(J)=F(L)-G(J)
+      D(J)=D(J)+G(J)-G(K)
+      J=J+1
+      K=K+1
+    1 CONTINUE
+      DO 2 L=1,MJ
+      D(L)=D(L)*X
+    2 CONTINUE
+      RETURN
+      END
+C
+      SUBROUTINE MEMO5(F,D,L,M,N)
+      REAL F(1),D(1)
+      LM=L*M
+      LMN=LM*N
+      DO 2 I=1,L
+      KLM=I-L
+      DO 2 K=I,LMN,LM
+      KLM=KLM+LM
+      A=F(K)-F(KLM)
+      DO 1 J=K,KLM,L
+      B=F(J+L)-F(J)
+      D(J)=D(J)+B-A
+      A=B
+    1 CONTINUE
+      B=F(K)-F(KLM)
+      D(KLM)=D(KLM)+B-A
+    2 CONTINUE
+      RETURN
+      END
+C
+      SUBROUTINE MEMOP(K,L)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DATA RP,WP/1HR,1HW/
+      IF(L0.GE.1) WRITE(IOUT,5)
+      PR(K)=RP
+      PR(L)=WP
+      KK = K
+      LL = L
+      CALL OPUS(KK,LL)
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   Opus)
+      END
+C
+      SUBROUTINE MEMP(IC,IS,IBC,IBS,CXC,SXC,SXS)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     *   IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF (L0.GE.1 ) WRITE(IOUT,5)
+      CXC = 0.
+      SXC = 0.
+      SXS = 0.
+      DO 1 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      CALL MEMP1(ST(KC(22)),ST(KC(IC)),ST(KC(IS)),ST(KC(IBC)),
+     * ST(KC(IBS)),CXC,SXC,SXS)
+      CALL UWRITE(IBC)
+      CALL UWRITE(IBS)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemP)
+      END
+      SUBROUTINE MEMP1(E,XC,XS,BC,BS,CXC,SXC,SXS)
+      REAL E(1),XC(1),XS(1),BC(1),BS(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MK
+      X = E(I)*XC(I)
+      Y = E(I)*XS(I)
+      Z1 = Z1+X*XC(I)
+      Z2 = Z2+X*XS(I)
+      Z3 = Z3+Y*XS(I)
+      BC(I) = X
+      BS(I) = Y
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC+Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMQ(IC,IS,IFC,IFS,CXC,SXC,SXS)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     *   IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      O2 = 0.
+      IF(M1.NE.2) GOTO 3
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      CALL MEMQ0(ST(KC(2)),ST(KC(IC)),ST(KC(IS)))
+    2 CONTINUE
+      O1 = O1/SUMF
+      O2 = O2/SUMF
+      CALL UINIT
+    3 CXC = 1.E-35
+      SXC = 0.
+      SXS = 1.E-35
+      DO 1 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      IF(M1.NE.4)
+     *CALL MEMQ1(ST(KC(2)),ST(KC(IC)),ST(KC(IS)),ST(KC(IFC)),
+     * ST(KC(IFS)),CXC,SXC,SXS)
+      IF(M1.EQ.4)
+     *CALL MEMQ4(ST(KC(2)),ST(KC(IC)),ST(KC(IS)),ST(KC(IFC)),
+     * ST(KC(IFS)),CXC,SXC,SXS)
+      CALL UWRITE(IFC)
+      CALL UWRITE(IFS)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemQ)
+      END
+C
+      SUBROUTINE MEMQ0(F,XC,XS)
+      REAL F(1),XC(1),XS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      DO 1 I=1,MJ
+      Z1 = Z1+F(I)*XC(I)
+      Z2 = Z2+F(I)*XS(I)
+    1 CONTINUE
+      O1 = O1+Z1
+      O2 = O2+Z2
+      RETURN
+      END
+C
+      SUBROUTINE MEMQ1(F,XC,XS,FXC,FXS,CXC,SXC,SXS)
+      REAL F(1),XC(1),XS(1),FXC(1),FXS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MJ
+      A = XC(I)-O1
+      B = XS(I)-O2
+      X = F(I)*A
+      Y = F(I)*B
+      Z1 = Z1+X*A
+      Z2 = Z2+X*B
+      Z3 = Z3+Y*B
+      FXC(I) = X
+      FXS(I) = Y
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC+Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMQ4(F,XC,XS,FXC,FXS,CXC,SXC,SXS)
+      REAL F(1),XC(1),XS(1),FXC(1),FXS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MJ
+      A = XC(I)-O1
+      B = XS(I)-O2
+      FF = F(I)*(1.0-F(I))
+      X = FF*A
+      Y = FF*B
+      Z1 = Z1+X*A
+      Z2 = Z2+X*B
+      Z3 = Z3+Y*B
+      FXC(I) = X
+      FXS(I) = Y
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC+Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMQW(IC,IS,IFC,IFS,CXC,SXC,SXS)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     *   IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      O1 = 0.
+      O2 = 0.
+      IF(M1.NE.2) GOTO 3
+      DO 2 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      CALL MEMQW0(ST(KC(2)),ST(KC(IC)),ST(KC(IS)))
+    2 CONTINUE
+      O1 = O1/SUMF
+      O2 = O2/SUMF
+      CALL UINIT
+    3 CXC = 1.E-35
+      SXC = 0.
+      SXS = 1.E-35
+      DO 1 I=1,NJ
+      CALL UREAD(2)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      CALL UREAD(19)
+      IF(M1.NE.4)
+     *CALL MEMQW1(ST(KC(2)),ST(KC(IC)),ST(KC(IS)),ST(KC(19)),
+     * ST(KC(IFC)),ST(KC(IFS)),CXC,SXC,SXS)
+      IF(M1.EQ.4)
+     *CALL MEMQW4(ST(KC(2)),ST(KC(IC)),ST(KC(IS)),ST(KC(19)),
+     * ST(KC(IFC)),ST(KC(IFS)),CXC,SXC,SXS)
+      CALL UWRITE(IFC)
+      CALL UWRITE(IFS)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(8H   MemQW)
+      END
+C
+      SUBROUTINE MEMQW0(F,XC,XS)
+      REAL F(1),XC(1),XS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      DO 1 I=1,MJ
+      Z1 = Z1+F(I)*XC(I)
+      Z2 = Z2+F(I)*XS(I)
+    1 CONTINUE
+      O1 = O1+Z1
+      O2 = O2+Z2
+      RETURN
+      END
+C
+      SUBROUTINE MEMQW1(F,XC,XS,WT,FXC,FXS,CXC,SXC,SXS)
+      REAL F(1),XC(1),XS(1),WT(1),FXC(1),FXS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MJ
+      A = XC(I)-O1*WT(I)
+      B = XS(I)-O2*WT(I)
+      Z = F(I)/(WT(I)+1.E-35)
+      X = Z*A
+      Y = Z*B
+      Z1 = Z1+X*A
+      Z2 = Z2+X*B
+      Z3 = Z3+Y*B
+      FXC(I) = X
+      FXS(I) = Y
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC+Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMQW4(F,XC,XS,WT,FXC,FXS,CXC,SXC,SXS)
+      REAL F(1),XC(1),XS(1),WT(1),FXC(1),FXS(1)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MJ
+      A = XC(I)-O1*WT(I)
+      B = XS(I)-O2*WT(I)
+      Z = F(I)*(1.0-F(I))/(WT(I)+1.E-35)
+      X = Z*A
+      Y = Z*B
+      Z1 = Z1+X*A
+      Z2 = Z2+X*B
+      Z3 = Z3+Y*B
+      FXC(I) = X
+      FXS(I) = Y
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC+Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMR(IC,IS,CXC,SXC,SXS)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     *  IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      IF(L0.GE.1) WRITE(IOUT,5)
+      CXC = 0.
+      SXC = 0.
+      SXS = 0.
+      DO 1 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(IC)
+      CALL UREAD(IS)
+      CALL MEMR1(ST(KC(22)),ST(KC(IC)),ST(KC(IS)),CXC,SXC,SXS)
+    1 CONTINUE
+      CALL UINIT
+      RETURN
+    5 FORMAT(7H   MemR)
+      END
+C
+      SUBROUTINE MEMR1(E,XC,XS,CXC,SXC,SXS)
+      REAL E(1),XC(1),XS(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK
+      Z1 = 0.
+      Z2 = 0.
+      Z3 = 0.
+      DO 1 I=1,MK
+      X = E(I)*XC(I)
+      Y = E(I)*XS(I)
+      Z1 = Z1+X*XC(I)
+      Z2 = Z2+X*XS(I)
+      Z3 = Z3+Y*XS(I)
+    1 CONTINUE
+      CXC = CXC+Z1
+      SXC = SXC +Z2
+      SXS = SXS+Z3
+      RETURN
+      END
+C
+      SUBROUTINE MEMT
+      COMMON /MECOM/C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,O1,O2,Z1,Z2,
+     * Z3,Z4,W1,W2,W3,SDD(3,3),CDD(3,3),VECU(3,3),SVEC(3,3),ZZ(7)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      IF(L0.GE.1) WRITE(IOUT,9900)
+      CBQ=ALF*SBQ-QBQ
+      SBC=ALF*SBS-SBQ
+      CBC=ALF*SBC-CBQ
+      CBBQ=ALF*SBBQ-QBBQ
+      SDD(1,1)=CC
+      SDD(1,2)=SC
+      SDD(1,3)=CBQ
+      SDD(2,1)=SC
+      SDD(2,2)=SS
+      SDD(2,3)=SBQ
+      SDD(3,1)=CBQ
+      SDD(3,2)=SBQ
+      SDD(3,3)=QBBQ
+      CDD(1,1)=CBC
+      CDD(1,2)=SBC
+      CDD(1,3)=CBBQ
+      CDD(2,1)=SBC
+      CDD(2,2)=SBS
+      CDD(2,3)=SBBQ
+      CDD(3,1)=CBBQ
+      CDD(3,2)=SBBQ
+      CDD(3,3)=QBBBQ
+      DO 1 I=1,3
+      DO 1 J=1,3
+      X=SQRT(SDD(I,I))*SQRT(SDD(J,J))+1.0E-18
+      VECU(I,J)=CDD(I,J)/X
+    1 SVEC(I,J)=SDD(I,J)/X
+C OPTIONAL DIAGNOSTICS
+      IF(L1.LT.3) RETURN
+      WRITE(IOUT,9910) (SDD(J,2),J=1,3)
+      WRITE(IOUT,9911) (SDD(J,1),J=1,3)
+      WRITE(IOUT,9914)
+      DO 2  I=1,3
+    2 WRITE(IOUT,9912) (SDD(I,J),J=1,3)
+      WRITE(IOUT,9914)
+      DO 3  I=1,3
+    3 WRITE(IOUT,9913) (CDD(I,J),J=1,3)
+      WRITE(IOUT,9914)
+      RETURN
+ 9900 FORMAT(10H   Control)
+ 9910 FORMAT(/7H  GSD  ,1PE14.6,2E14.6)
+ 9911 FORMAT(/7H  GCD  ,1PE14.6,2E14.6)
+ 9912 FORMAT(7H  SDD  ,1PE14.6,2E14.6)
+ 9913 FORMAT(7H  CDD  ,1PE14.6,2E14.6)
+ 9914 FORMAT(1H )
+      END
+C
+      SUBROUTINE MEMTR(K,L)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DATA RP,WP/1HR,1HW/
+      IF(L0.GE.1) WRITE(IOUT,5)
+      PR(K)=RP
+      PR(L)=WP
+      KK = K
+      LL = L
+      CALL TROPUS(KK,LL)
+      CALL UINIT
+      RETURN
+    5 FORMAT(9H   Tropus)
+      END
+C
+      SUBROUTINE MEMU(MAT,VAL,ND)
+C  SOLVES MAT(I,J)*VEC(J,K) = VAL(K)*VEC(I,K)
+C  FOR EIGENVALUES VAL AND EIGENVECTORS VEC, FOR K=1,2,..ND
+C EIGENVECTORS ARE RETURNED IN MAT
+C  EIGENVALUES ARE RETURNED IN INCREASING ORDER
+C  EIGENVECTORS ARE NORMALISED TO VEC.VEC=1
+      REAL M,MAT(3,3),VAL(3)
+      COMMON /MECOM/ Z1(11),T,A,B,C,
+     *M(3,3),P(3,3),Q(3,1),X(3),Y(3),Z2(43)
+      DO 2  I=1,ND
+      DO 2  J=1,ND
+    2 M(I,J)=MAT(I,J)
+C MAX L
+C OUTER LOOP N FOR SUCCESSIVELY SMALLER EVALS
+      N=ND
+   10 T=0.0E0
+      DO 13  I=1,ND
+      DO 12  J=1,ND
+   12 P(I,J)=M(I,J)
+   13 T=T+P(I,I)
+      L=0
+C INNER LOOP L FOR SQUARING P AND SETTING T=TRACE
+   20 L=L+1
+      T=1.0E0/T
+      DO 21  I=1,ND
+      DO 21  J=1,ND
+      Q(I,J)=P(I,J)*T
+      IF(ABS(Q(I,J)).LT.1.0E-18) Q(I,J)=0.0E0
+   21 CONTINUE
+      T=0.0E0
+      DO 24  I=1,ND
+      DO 23  J=1,ND
+      A=0.0E0
+      DO 22  K=1,ND
+   22 A=A+Q(I,K)*Q(K,J)
+      IF(ABS(A).LT.1.0E-18) A=0.0E0
+   23 P(I,J)=A
+   24 T=T+P(I,I)
+C END INNER LOOP WHEN P IS DYADIC
+      IF( T.LT.9.999970E-1 .AND. L.LE.28 )  GOTO 20
+C K = LARGEST COLUMN = ESTIMATE OF CURRENT LARGEST EVEC
+      K=1
+      A=0.0E0
+      DO 25  I=1,ND
+      IF(P(I,I).LE.A) GOTO 25
+      A=P(I,I)
+      K=I
+   25 CONTINUE
+C P(P(LARGEST COLUMN)) = BETTER ESTIMATE X
+      DO 26  I=1,ND
+      A=0.0E0
+      DO 16  J=1,ND
+   16 A=A+P(I,J)*P(J,K)
+      IF(ABS(A).LT.1.0E-18) A=0.0E0
+   26 Y(I)=A
+      T=0.0E0
+      DO 28  I=1,ND
+      A=0.0E0
+      DO 27  J=1,ND
+   27 A=A+P(I,J)*Y(J)
+      IF(ABS(A).LT.1.0E-18) A=0.0E0
+      T=T+A*A
+   28 X(I)=A
+C ORTHOGONALISE
+      K=ND
+      IF(K.EQ.N) GOTO 33
+   30 A=0.0E0
+      DO 31  I=1,ND
+   31 A=A+X(I)*MAT(I,K)
+      DO 32  I=1,ND
+      B=X(I)-A
+      IF(ABS(B).LT.1.0E-18) B=0.0E0
+   32 X(I)=B
+      K=K-1
+      IF(K.GT.N) GOTO 30
+C NORMALISE
+   33 A=0.0E0
+      DO 34  I=1,ND
+   34 A=A+X(I)*X(I)
+      A=1.0E0/SQRT(A)
+C SET EVEC
+      DO 35  I=1,ND
+      X(I)=A*X(I)
+   35 MAT(I,N)=X(I)
+C SET EVAL
+      A=0.0E0
+      DO 40  I=1,ND
+      DO 40  J=1,ND
+      B=X(I)*X(J)
+      IF(ABS(B).LT.1.0E-18) B=0.0E0
+   40 A=A+M(I,J)*B
+      VAL(N)=A
+C FINISH ?
+      N=N-1
+      IF(N.LE.0) RETURN
+C OTHERWISE, REMOVE DYADIC EVEC FROM M
+      DO 41  I=1,ND
+      DO 41  J=1,ND
+      B=X(I)*X(J)
+      IF(ABS(B).LT.1.0E-18) B=0.0E0
+      M(I,J)=M(I,J)-A*B
+      IF(ABS(M(I,J)).LT.1.0E-18) M(I,J)=0.0E0
+   41 CONTINUE
+      GOTO 10
+      END
+C
+      SUBROUTINE MEMV(MATRIX,METRIC,EVAL,VECU,NDIM,NSRCH,ERRA,EPS4A,PEN)
+C SOLVES  MATRIX(I,J)*VECU(J,K)=EVALK*METRIC(I,J)*VECU(J,K)
+C FOR EIGENVALUES EVAL AND EIGENVECTORS VECU, FOR K=1,2,...,NDIM
+C
+C RETURNS PEN = UNCERTAINTY IN LOWEST EIGENVALUE EVAL(1)
+C
+C NDIM USUALLY RETURNS AS THE FULL DIMENSION,NSRCH, OF THE METRIC,
+C BUT IF THE METRIC IS VERY ILL-CONDITIONED, THE ROUTINE WILL USE
+C ONLY THE SUBSPACE SPANNED BY ITS LARGER EIGENVALUES,
+C AND NDIM WILL RETURN WITH AN APPROPRIATELY SMALLER VALUE.
+C
+C EIGENVALUES ARE RETURNED IN INCREASING ORDER.
+C EIGENVECTORS ARE NORMALISED TO  V.METRIC.V=1
+      DOUBLE PRECISION MATRIX(6,6),METRIC(6,6),VECU(6,6)
+      DOUBLE PRECISION EVAL(6),SVAL(6),SVEC(6,6)
+      DOUBLE PRECISION MAT(6,6),MET(6,6),V(6)
+      DOUBLE PRECISION CVAL(6),W1(6,6),W2(6,6)
+      DOUBLE PRECISION ERR,EPS4,X,Y,DSQRT,DABS
+C COPY NORMALISED INPUT MATRICES TO MAT=MATRIX, MET=METRIC
+      ERR=ERRA
+      EPS4=EPS4A
+      DO 1  I=1,NSRCH
+      DO 1  J=1,NSRCH
+      X=DSQRT(METRIC(I,I))*DSQRT(METRIC(J,J))
+      MAT(I,J)=MATRIX(I,J)/(X+1.0D-18)
+    1 MET(I,J)=METRIC(I,J)/(X+1.0D-18)
+C ENTROPY EIGENVECTORS AND EIGENVALUES
+      CALL MEMV1(MET,SVAL,SVEC,NSRCH,EPS4)
+      X=ERR*SVAL(NSRCH)
+      K=0
+    4 K=K+1
+      IF( SVAL(K).LT.X )  GOTO 4
+      NDIM=NSRCH-K+1
+C ROTATE MATRIX TO METRIC EIGENVECTOR SPACE
+      DO 6  I=1,NSRCH
+      DO 6  J=1,NDIM
+      M=J+K-1
+      X=0.0D0
+      DO 5  L=1,NSRCH
+    5 X=X+MAT(I,L)*SVEC(L,M)
+    6 W2(I,J)=X
+      DO 8  I=1,NDIM
+      M=I+K-1
+      DO 8  J=1,NDIM
+      X=0.0D0
+      DO 7  L=1,NSRCH
+    7 X=X+SVEC(L,M)*W2(L,J)
+    8 W1(I,J)=X
+C MATRIX IS NOW W1, METRIC IS NOW DIAG(SVAL)
+C SQUEEZE MATRIX=W1 TO ISOTROPISE METRIC
+      DO 9  I=1,NDIM
+      DO 9  J=1,NDIM
+    9 W1(I,J)=W1(I,J)/(DSQRT(SVAL(I+K-1))*DSQRT(SVAL(J+K-1)))
+C PUT METRIC=W1 EIGENVALUES IN CVAL, EIGENVECTORS IN W2
+      CALL MEMV1(W1,CVAL,W2,NDIM,EPS4)
+C COMPLETE SQUEEZE OF W2 BACK TO METRIC EIGENVECTOR SPACE
+      DO 10  I=1,NDIM
+      DO 10  J=1,NDIM
+   10 W2(I,J)=W2(I,J)/DSQRT(SVAL(I+K-1))
+C ROTATE W2 TO ORIGINAL SPACE
+      DO 12  J=1,NDIM
+      DO 12  I=1,NSRCH
+      X=0.0D0
+      DO 11  L=1,NDIM
+      M=L+K-1
+   11 X=X+SVEC(I,M)*W2(L,J)
+   12 W1(I,J)=X/(DSQRT(METRIC(I,I))+1.0D-35)
+C POLISH N EIGENVALUES
+      DO 14  J=1,NDIM
+      X=0.0D0
+      Y=0.0D0
+      DO 13  L=1,NSRCH
+      DO 13  M=1,NSRCH
+      X=X+W1(L,J)*MATRIX(L,M)*W1(M,J)
+   13 Y=Y+W1(L,J)*METRIC(L,M)*W1(M,J)
+      EVAL(J)=X/Y
+      DO 14  L=1,NSRCH
+   14 VECU(L,J)=W1(L,J)/DSQRT(Y)
+C UNCERTAINTY IN EVAL(1)
+      X=0.0D0
+      DO 15 L=1,NSRCH
+      DO 15 M=1,NSRCH
+      Y=VECU(L,1)*VECU(M,1)
+   15 X=X+DABS(Y*MATRIX(L,M))+DABS(EVAL(1)*Y*METRIC(L,M))
+      PEN=ERR*X/NSRCH
+      RETURN
+      END
+C
+      SUBROUTINE MEMV1(MAT,VAL,VEC,ND,EPS)
+C  SOLVES MAT(I,J)*VEC(J,K) = VAL(K)*VEC(I,K)
+C  FOR EIGENVALUES VAL AND EIGENVECTORS VEC, FOR K=1,2,..ND
+C
+C  EIGENVALUES ARE RETURNED IN INCREASING ORDER
+C  EIGENVECTORS ARE NORMALISED TO VEC.VEC=1
+      DOUBLE PRECISION MAT(6,6),VAL(6),VEC(6,6),EPS
+      DOUBLE PRECISION M(6,6),P(6,6),Q(6,6),X(6),Y(6)
+      DOUBLE PRECISION DSQRT,DLOG,DABS,T,A,B,C
+C OFFSET EVALS BY C TO MAKE M POSITIVE DEFINITE
+      A=0.0D0
+      B=0.0D0
+      T=0.0D0
+      DO 4  I=1,ND
+      A=A+MAT(I,I)
+      DO 1  J=1,ND
+      C=MAT(I,J)
+      IF(DABS(C).LT.1.0D-18) C=0.0D0
+    1 B=B+C**2
+    4 T=T+1.0D0
+      C=B-A*A/T
+      C=A/T-DSQRT(C)-EPS*DSQRT(B)
+      DO 3  I=1,ND
+      DO 2  J=I,ND
+      M(I,J)=MAT(I,J)
+    2 M(J,I)=MAT(I,J)
+    3 M(I,I)=M(I,I)-C
+C MAX L
+      T=-DLOG(EPS)/(EPS*DLOG(2.0D0))
+      T=DLOG(T)/DLOG(2.0D0)
+      LMAX=T+2.0D0
+C OUTER LOOP N FOR SUCCESSIVELY SMALLER EVALS
+      N=ND
+   10 T=0.0D0
+      DO 13  I=1,ND
+      DO 12  J=1,ND
+   12 P(I,J)=M(I,J)
+   13 T=T+P(I,I)
+      L=0
+C INNER LOOP L FOR SQUARING P AND SETTING T=TRACE
+   20 L=L+1
+      T=1.0D0/T
+      DO 21  I=1,ND
+      DO 21  J=1,ND
+      Q(I,J)=P(I,J)*T
+      IF(DABS(Q(I,J)).LT.1.0D-18) Q(I,J)=0.0D0
+   21 CONTINUE
+      T=0.0D0
+      DO 24  I=1,ND
+      DO 23  J=I,ND
+      A=0.0D0
+      DO 22  K=1,ND
+   22 A=A+Q(I,K)*Q(K,J)
+      IF(DABS(A).LT.1.0D-18) A=0.0D0
+      P(I,J)=A
+   23 P(J,I)=A
+   24 T=T+P(I,I)
+C END INNER LOOP WHEN P IS DYADIC
+      IF( T.LT.1.0D0-EPS*10.D0 .AND. L.LE.LMAX )  GOTO 20
+C K = LARGEST COLUMN = ESTIMATE OF CURRENT LARGEST EVEC
+      K=1
+      A=0.0D0
+      DO 25  I=1,ND
+      IF(P(I,I).LE.A) GOTO 25
+      A=P(I,I)
+      K=I
+   25 CONTINUE
+C P(P(LARGEST COLUMN)) = BETTER ESTIMATE X
+      DO 26  I=1,ND
+      A=0.0D0
+      DO 16  J=1,ND
+   16 A=A+P(I,J)*P(J,K)
+      IF(DABS(A).LT.1.0D-18) A=0.0D0
+   26 Y(I)=A
+      T=0.0D0
+      DO 28  I=1,ND
+      A=0.0D0
+      DO 27  J=1,ND
+   27 A=A+P(I,J)*Y(J)
+      IF(DABS(A).LT.1.0D-18) A=0.0D0
+      T=T+A*A
+   28 X(I)=A
+C ORTHOGONALISE
+      K=ND
+      IF(K.EQ.N) GOTO 33
+   30 A=0.0D0
+      DO 31  I=1,ND
+   31 A=A+X(I)*VEC(I,K)
+      DO 32  I=1,ND
+      B=X(I)-A
+      IF(DABS(B).LT.1.0D-18) B=0.0D0
+   32 X(I)=B
+      K=K-1
+      IF(K.GT.N) GOTO 30
+C NORMALISE
+   33 A=0.0D0
+      DO 34  I=1,ND
+   34 A=A+X(I)*X(I)
+      A=1.0D0/DSQRT(A)
+C SET EVEC
+      DO 35  I=1,ND
+      X(I)=A*X(I)
+   35 VEC(I,N)=X(I)
+C SET EVAL
+      A=0.0D0
+      DO 40  I=1,ND
+      DO 40  J=1,ND
+      B=X(I)*X(J)
+      IF(DABS(B).LT.1.0D-18) B=0.0D0
+   40 A=A+M(I,J)*B
+      VAL(N)=A+C
+C FINISH ?
+      N=N-1
+      IF(N.LE.0) RETURN
+C OTHERWISE, REMOVE DYADIC EVEC FROM M
+      DO 41  I=1,ND
+      DO 41  J=I,ND
+      B=X(I)*X(J)
+      IF(DABS(B).LT.1.0D-18) B=0.0D0
+      M(I,J)=M(I,J)-A*B
+      IF(DABS(M(I,J)).LT.1.0D-18) M(I,J)=0.0D0
+   41 M(J,I)=M(I,J)
+      GOTO 10
+      END
+C
+      SUBROUTINE MEMX(NDIM)
+      REAL Q(3,3)
+      COMMON /MECOM/ Z1(60),VECU(3,3),SVEC(3,3),SVAL(3),Z2(4)
+      NSRCH=3
+      X=3.0E-5*SVAL(NSRCH)
+      K=0
+    4 K=K+1
+      IF( SVAL(K).LT.X )  GOTO 4
+      K = K-1
+      NDIM=NSRCH-K
+C ROTATE MATRIX TO METRIC EIGENVECTOR SPACE
+      DO 6  I=1,NSRCH
+      DO 6  J=1,NDIM
+      M=J+K
+      X=0.0E0
+      DO 5  L=1,NSRCH
+    5 X=X+VECU(I,L)*SVEC(L,M)
+    6 Q(I,J)=X
+      DO 8  I=1,NDIM
+      M=I+K
+      DO 8  J=1,NDIM
+      X=0.0E0
+      DO 7  L=1,NSRCH
+    7 X=X+SVEC(L,M)*Q(L,J)
+    8 VECU(I,J)=X
+C MATRIX IS NOW VECU, METRIC IS NOW DIAG(SVAL)
+C SQUEEZE MATRIX=VECU TO ISOTROPISE METRIC
+      DO 9  I=1,NDIM
+      DO 9  J=1,NDIM
+    9 VECU(I,J)=VECU(I,J)/(SQRT(SVAL(I+K))*SQRT(SVAL(J+K)))
+      RETURN
+      END
+C
+      SUBROUTINE MEMY(NDIM)
+      REAL MAT(3,3),GSD(3),GCD(3)
+      COMMON /MECOM/ Z1(42),SDD(3,3),CDD(3,3),VECU(3,3),
+     * SVEC(3,3),SVAL(3),EVAL(3),Z2
+      NSRCH=3
+      K=NSRCH-NDIM
+C COMPLETE SQUEEZE OF W2 BACK TO SDD EIGENVECTOR SPACE
+      DO 10  I=1,NDIM
+      DO 10  J=1,NDIM
+   10 VECU(I,J)=VECU(I,J)/SQRT(SVAL(I+K))
+C ROTATE VECU TO ORIGINAL SPACE
+      DO 12  J=1,NDIM
+      DO 12  I=1,NSRCH
+      X=0.0E0
+      DO 11  L=1,NDIM
+      M=L+K
+   11 X=X+SVEC(I,M)*VECU(L,J)
+   12 MAT(I,J)=X/(SQRT(SDD(I,I)+1.0E-35))
+C POLISH N EIGENVALUES AND KILL NEGATIVES
+      K=0
+      DO 14  J=1,NDIM
+      IF(EVAL(J).LE.0.0E0) GOTO 14
+      K=K+1
+      X=0.0E0
+      Y=0.0E0
+      DO 13  L=1,NSRCH
+      DO 13  M=1,NSRCH
+      X=X+MAT(L,J)*CDD(L,M)*MAT(M,J)
+   13 Y=Y+MAT(L,J)*SDD(L,M)*MAT(M,J)
+      EVAL(K)=X/Y
+      DO 141  L=1,NSRCH
+  141 VECU(L,K)=MAT(L,J)/SQRT(Y)
+   14 CONTINUE
+      NDIM=K
+C REWRITE GCD,GSD IN EIGENVECTOR COORDINATES
+      DO 22 K1=1,NDIM
+      X=0.0E0
+      Y=0.0E0
+      DO 21 K2=1,NSRCH
+      X=X+SDD(K2,1)*VECU(K2,K1)
+   21 Y=Y+SDD(K2,2)*VECU(K2,K1)
+      SVEC(K1,1)=X
+   22 SVEC(K1,2)=Y
+C CDD IS NOW DIAGONAL(EVAL), SDD IS NOW UNIT
+      RETURN
+      END
+C
+      SUBROUTINE MEMZ(NDIM)
+C EXIT WITH W = COMPONENTS OF DELTA(F)
+      REAL GSD0(3),GCD0(3)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     *Z1(10),A1,A2,AA,AAA,CMIN,CAIM,D2S,AL,CCMIN,CCMAX,CCPEN,CCNEW,
+     *CPEN,CMAX,PEN,P1,P2,PP,X,W(3),SDD(3,3),CDD(3,3),
+     *VECU(3,3),GCD(3),GSD(3),XU(3),XXU(3),EVAL(3),Z4
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,NSRCH,M1,M2,M3,M4
+C
+CHAPTER 1.  SUBSPACE STRUCTURES
+C SET CAIM
+      CAIM=C0
+      CMIN=C
+      DO 13  K=1,NDIM
+   13 CMIN=CMIN-0.50E0*GCD(K)*GCD(K)/EVAL(K)
+      CMIN=(2.0E0*CMIN+C)/3.0E0
+      IF( CMIN.GT.C0 )  CAIM=CMIN
+   14 CONTINUE
+C
+C CONTROL OF PRECISION IS IMPORTANT
+C THE BINARY CHOP LIMIT FOR AL GIVES FULL ARITHMETIC ACCURACY
+C THE MATRIX B IS INVERTED BY DIVIDING BY ITS (SUBSPACE) EIGENVALUES
+C
+CHAPTER 2. FIND SMALLEST ACCEPTABLE PENALTY >= 0 AND ITS AL
+   20 PEN=0.0E0
+      P1=0.0E0
+      P2=1.0E18
+      AAA=0.0E0
+      PP=0.0E0
+      GOTO 210
+   21 IF( P2-P1.LE.0.010E0*PEN )  GOTO 30
+      PEN=(2.0E0*P1+1.0E0+P1/P2)/(1.0E0+(2.0E0+P1)/P2)
+C SET RANGE FOR ALPHA ITERATION
+  210 CMIN=CAIM
+      CMAX=C
+      JUMP=1
+      IF(CAIM.LT.C) GOTO 22
+      CMIN=C
+      CMAX=CAIM
+      JUMP=2
+C START AL ITERATION
+   22 AL=1.0E0
+      A1=1.0E-18
+      A2=1.0E18
+      AA=0.0E0
+      N=0
+   23 N=N+1
+      IF(N.GT.60) GOTO 28
+      AL=(2.0E0*A1*(A2/AL)+A1+A2)/(2.0E0+(A1+A2)/AL)
+C SOLVE B(..)X(.)=GQ(.)
+C NEW STATISTICS AND D2S
+      D2S=0.0E0
+      CPEN=C
+      CNEW=C
+      DO 24  K=1,NDIM
+      XU(K)=(AL*GSD(K)-GCD(K))/((EVAL(K)+PEN)+AL)
+      D2S=D2S+XU(K)*XU(K)/SUMF
+      CPEN=CPEN+XU(K)*(GCD(K)+0.50E0*(EVAL(K)+PEN)*XU(K))
+      CNEW=CNEW+XU(K)*(GCD(K)+0.50E0*EVAL(K)*XU(K))
+   24 CONTINUE
+C PRIMARY ALPHA CONTROL (MONOTONIC GUARANTEE)
+      IF( CPEN.GT.CMAX )  GOTO 25
+C     IF( CPEN.LT.CMIN )  GOTO 26
+C SECONDARY ALPHA CONTROL (GUARANTEES NOT ESSENTIAL)
+      IF( CNEW.LT.CMIN )  GOTO 26
+      IF( D2S.GT.RATE )  GOTO(26,25),JUMP
+      GOTO(25,26),JUMP
+C REDUCE ALPHA
+   25 A2=AL
+      IF(D2S.LE.RATE) AA=AL
+      GOTO  23
+C INCREASE ALPHA
+   26 A1=AL
+      GOTO 23
+C ITERATE PENALTY
+   28 IF( AA.EQ.A2 )  GOTO 29
+C PENALTY TOO SMALL
+      P1=PEN
+      GOTO 21
+C PENALTY LARGE ENOUGH.  DECREASE AND STORE IT
+   29 AAA=AA
+      CCMIN=CMIN
+      CCMAX=CMAX
+      CCPEN=CPEN
+      CCNEW=CNEW
+      DO 291 K=1,NDIM
+  291 XXU(K)=XU(K)
+      PP=PEN
+      P2=PEN
+      GOTO 21
+C EXIT WITH SMALLEST PEN ALLOWING CNEW & CPEN BETWEEN CAIM & C
+C AND SATISFYING D2S<RATES
+C EXIT WITH AAA = CORRESPONDING AL
+C
+CHAPTER 3.  RETURN TO SEARCH DIRECTION COORDINATES
+C  REWRITE XU IN SEARCH DIRECTION COORDINATES
+   30 DO 33 K1=1,NSRCH
+      W(K1)=0.0E0
+      DO 33 K2=1,NDIM
+   33 W(K1)=W(K1)+VECU(K1,K2)*XXU(K2)
+      CNEW=C
+      DO 36  K1=1,NSRCH
+      X=0.0E0
+      DO 35  K2=1,NSRCH
+   35 X=X+CDD(K1,K2)*W(K2)
+   36 CNEW=CNEW+(SDD(K1,1)+0.50E0*X)*W(K1)
+C OPTIONAL DIAGNOSTICS
+      IF(L1.EQ.0) RETURN
+      IF(L1.EQ.1) GOTO 38
+      WRITE(IOUT,9900) D2S,CCNEW,AAA,PP
+      WRITE(IOUT,9901) CCMIN,CCNEW,CCPEN,CCMAX,C
+      WRITE(IOUT,9902) (SDD(K,K),K=1,NSRCH)
+      WRITE(IOUT,9903) (EVAL(K),K=1,NDIM)
+      WRITE(IOUT,9910)
+   38 WRITE(IOUT,9909) CNEW
+      RETURN
+ 9900 FORMAT(8H DCAP   ,1PE13.5,4E13.5)
+ 9901 FORMAT(8H <<<<C  ,1PE13.5,4E13.5)
+ 9902 FORMAT(7H  A.A  ,1PE10.2,5E10.2)
+ 9903 FORMAT(7H  EVAL ,1PE10.2,5E10.2)
+ 9909 FORMAT(10H CNEW === ,1PE12.5)
+ 9910 FORMAT(1H )
+      END
+C
+      SUBROUTINE RMEM
+      COMMON /MECOMP/NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+C  NORMALISED RESIDUALS TO FILE 35
+      CALL MEINIT
+      K = 1
+      L = 23
+      CALL OPUS(K,L)
+      CALL MEINIT
+      DO 1 I=1,NK
+      CALL UREAD(22)
+      CALL UREAD(21)
+      CALL UREAD(23)
+      CALL RMEMA(ST(KC(22)),ST(KC(21)),ST(KC(23)),ST(KC(35)))
+      CALL UWRITE(35)
+    1 CONTINUE
+      CALL MEINIT
+      RETURN
+      END
+C
+      SUBROUTINE RMEMA(E,D,F,R)
+      REALE(1),D(1),F(1),R(1)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40)
+      DO 1 I=1,MK
+    1 R(I) = (F(I)-D(I))*SQRT(.5*E(I))
+      RETURN
+      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C               Maximum-Entropy Data-Processing System                 C
+C                                                                      C
+C               John Skilling                                          C
+C               Dept. Applied Maths. and Theoretical Physics           C
+C               Silver Street                                          C
+C               Cambridge                                              C
+C                                                                      C
+C         (C)   Copyright                                              C
+C               Maximum Entropy Data Consultants Ltd                   C
+C               6 September 1982                                       C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      SUBROUTINE SMEM(METHOD,LEVEL,C0A,RATEA,DEFA)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      CALL MEINIT
+C
+C METHOD = M1*10 + M0
+C
+C M0 = number of search directions
+C   M0 = 3
+C
+C M1 = type of entropy
+C   M1 = 0 is fixed default=DEF
+C   M1 = 1 is default = exp(sum(p log f))
+C   M1 = 2 is constant sum(w f)
+C   M1 = 4 is 0<f<1 at fixed default = DEF
+C
+      M0=METHOD
+      M1=M0/10
+      M0=M0-10*M1
+C
+C LEVEL = L1*10 + L0
+C
+C L0 = progress diagnostics
+C   L0 = 0 switches these off
+C   L0 = 1 produces names of main routines
+C   L0 = 2 produces additionally a read/write flowchart
+C
+C L1 = numerical diagnostics
+C   L1 = 0 switches these off
+C   L1 = 1 produces low level diagnostics C, TEST, CNEW
+C   L1 = 2 produces additionally technical diagnostics from control
+C   L1 = 3 produces additionally the subspace scalar product matrices
+C
+      L0=LEVEL
+      L1=L0/10
+      L0=L0-10*L1
+      IF (M0.EQ.3.AND.(M1.EQ.0.OR.M1.EQ.1.OR.M1.EQ.2.
+     *    OR.M1.EQ.4)) GOTO 1
+      WRITE(IOUT,6) METHOD
+      STOP
+    1 IF(  (L0.EQ.0.OR.L0.EQ.1.OR.L0.EQ.2)
+     *.AND.(L1.EQ.0.OR.L1.EQ.1.OR.L1.EQ.2.OR.L1.EQ.3)) GOTO 2
+      WRITE(IOUT,7) LEVEL
+      STOP
+    2 C0=C0A
+      RATE=RATEA
+      IF(M1.EQ.4) DEFLOG=ALOG(DEFA)-ALOG(1.0-DEFA)
+      IF(M1.EQ.0) DEFLOG=ALOG(DEFA)
+      FLOOR=1.E-20
+      IF(L0.GE.1) WRITE(IOUT,5) M1,M0
+C BEGIN MEM
+      CALL MEMOP(1,23)
+      CALL MEMA
+      CALL MEMTR(24,7)
+      CALL MEMB
+      CALL MEMOP(3,25)
+      CALL MEMOP(4,26)
+      CALL MEMC
+      CALL MEMTR(27,6)
+      CALL MEMD
+      CALL MEMOP(5,28)
+      CALL MEME
+    9 CALL MEML
+      CALL MEMF
+C END MEM
+      RETURN
+    5 FORMAT(25H SMEM 06.09.82  METHOD = ,2I1)
+    6 FORMAT(7H METHOD,I11,25H   NOT IMPLEMENTED. STOP.)
+    7 FORMAT(7H LEVEL ,I11,25H   NOT IMPLEMENTED. STOP.)
+      END
+C
+      FUNCTION UCMLNT(X)
+C RETURNS THE RESIDUAL 'UCMLNT'(IN STANDARD DEVIATIONS) HAVING A
+C FRACTION 'X' OF THE AREA OF THE NORMAL DISTRIBUTION TO ITS LEFT.
+C
+C X MUST BE IN THE CLOSED INTERVAL  0,1
+C
+C ERRORS ARE <0.005 STANDARD DEVIATIONS IN THE BULK OF THE DISTRIBUTION
+C RISING TO AROUND 0.01 DEVIATIONS FAR OUT IN THE TAILS.
+      A=-ALOG(1.0E-35+4.0*X*(1.0-X))
+      B=A-0.25*ALOG(1.0+A*(0.85841+0.39041*A))
+      UCMLNT=SQRT(B+B)
+      IF(X.LT.0.5) UCMLNT=-UCMLNT
+      RETURN
+      END
+C
+      SUBROUTINE UGET(I,X,M)
+      REAL X(M)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      K=KA(I)
+      READ(K) X
+      RETURN
+      END
+C
+      SUBROUTINE UINIT
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      DATA BP/1H./
+      IF(L0.GE.2) WRITE(IOUT,4) PR
+      DO 1  I=1,40
+      PR(I)=BP
+      CALL URESET(I)
+    1 CONTINUE
+      RETURN
+    4 FORMAT(11X,20A1,2X,20A1)
+      END
+C
+      SUBROUTINE UPUT(I,X,M)
+      REAL X(M)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      K=KA(I)
+      WRITE(K) X
+      RETURN
+      END
+C
+      SUBROUTINE URAND(X,Y)
+C  SET X = RANDOM NUMBER FROM NORMAL(MEAN=0,VARIANCE=1).
+C  Y = (FLOATING POINT) INTEGER, TO BE INITIALISED TO 0<=Y<16777216.0
+C   AND THEREAFTER PRESERVED BETWEEN CALLS DURING A RUN OF RANDOMS.
+C REPEAT CYCLE = 2**21 = 2097152 CALLS, SMALL TO MAKE CODE PORTABLE.
+      DOUBLE PRECISION Z,DMOD
+      X=0.
+      Z=Y
+      Z=2.0D0*Y+1.0D0
+      DO 1 K=1,13
+      Z=DMOD(Z*19487171.D0,33554432.D0)
+    1 X=X+Z
+      X=X*2.863314E-8-6.244998
+      Z=(Z-1.0D0)/2.0D0
+      Y=Z
+      RETURN
+      END
+C
+      SUBROUTINE UREAD(I)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      DATA RP/1HR/
+      PR(I)=RP
+C     IF(I.LE.20)
+                  M=MJ
+      IF(I.GT.20) M=MK
+      IF(KA(I).EQ.0) GOTO 1
+C DISC
+      CALL UGET(I,ST(KC(I)),M)
+      RETURN
+C CORE
+    1 KC(I)=KD(I)
+      KD(I)=KD(I)+M
+      RETURN
+      END
+C
+      SUBROUTINE URESET(I)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+C CORE
+      KC(I)=KB(I)
+      IF(KA(I).EQ.0) KD(I)=KB(I)
+C DISC
+      IF(KA(I).NE.0) CALL UWIND(I)
+      RETURN
+      END
+C
+      SUBROUTINE UWIND(I)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      K=KA(I)
+      REWIND K
+      RETURN
+      END
+C
+      SUBROUTINE UWRITE(I)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     * SS,SC,CC,SBS,SBC,CBC,SBBS,SBBC,CBBC,SBBBS,SBBBC,CBBBC,
+     * S4S,S4C,C4C,S5S,S5C,C5C,SBQ,QBQ,SBBQ,QBBQ,QBBBQ,
+     * O1,O2,Z1,Z2,Z3,Z4,W1,W2,W3,W4,W5,W6,PR(40)
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      DATA WP/1HW/
+      PR(I)=WP
+C     IF(I.LE.20)
+                  M=MJ
+      IF(I.GT.20) M=MK
+      IF(KA(I).EQ.0) GOTO 1
+C DISC
+      CALL UPUT(I,ST(KC(I)),M)
+      RETURN
+C CORE
+    1 KD(I)=KD(I)+M
+      KC(I)=KD(I)
+      RETURN
+      END
+C
+      SUBROUTINE XMEM(METHOD,LEVEL,C0A,RATEA,DEFA)
+      COMMON /MECOM/ C,TEST,CNEW,ALF,C0,RATE,DEFLOG,FLOOR,SUMF,SUMFLF,
+     *SS,SC,CC,
+     *Z1(29),SDD(3,3),CDD(3,3),VECU(3,3),SVEC(3,3),SVAL(3),EVAL(3),Z2
+      COMMON /MECOMP/ NJ,MJ,NK,MK,KA(40),KB(40),KC(40),KD(40),
+     * IOUT,L0,L1,M0,M1,M2,M3,M4
+      COMMON /MECOMS/ ST(1)
+      CALL MEINIT
+C
+C METHOD = M1*10 + M0
+C
+C M0 = number of search directions
+C   M0 = 3
+C
+C M1 = type of entropy
+C   M1 = 0 is fixed default=DEF
+C   M1 = 1 is default = exp(sum(p log f))
+C   M1 = 2 is constant sum(w f)
+C   M1 = 4 is 0<f<1 at fixed default = DEF
+C
+      M1=METHOD/10
+      M0=METHOD-10*M1
+C
+C LEVEL = L1*10 + L0
+C
+C L0 = progress diagnostics
+C   L0 = 0 switches these off
+C   L0 = 1 produces names of main routines
+C   L0 = 2 produces additionally a read/write flowchart
+C
+C L1 = numerical diagnostics
+C   L1 = 0 switches these off
+C   L1 = 1 produces low level diagnostics C, TEST, CNEW
+C   L1 = 2 produces additionally technical diagnostics from control
+C   L1 = 3 produces additionally the subspace scalar product matrices
+C
+      L1=LEVEL/10
+      L0=LEVEL-10*L1
+      C0=C0A
+      RATE=RATEA
+      IF(M1.EQ.4) DEFLOG=ALOG(DEFA)-ALOG(1.0-DEFA)
+      IF(M1.EQ.0) DEFLOG=ALOG(DEFA)
+      FLOOR=1.E-20
+      IF(L0.GE.1) WRITE(IOUT,5) M1,M0
+C BEGIN MEM
+      CALL MEMOP(1,23)
+      CALL MEMA
+      CALL MEMTR(24,7)
+      CALL MEMB
+      IF(SS.GT.1.E-10*SUMF) GOTO 2
+      CALL MEMI
+      RETURN
+    2 CONTINUE
+      CALL MEMOP(3,25)
+      CALL MEMOP(4,26)
+      CALL MEMC
+      CALL MEMTR(27,6)
+      CALL MEMD
+      CALL MEMOP(5,28)
+      CALL MEME
+      CALL MEMT
+      CALL MEMU(SVEC,SVAL,M0)
+      CALL MEMX(NDIM)
+      CALL MEMU(VECU,EVAL,NDIM)
+      CALL MEMY(NDIM)
+      CALL MEMZ(NDIM)
+      CALL MEINIT
+      CALL MEMF
+C END MEM
+      RETURN
+    5 FORMAT(25H XMEM 06.09.82  METHOD = ,2I1)
+      END

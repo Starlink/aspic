@@ -1,0 +1,9 @@
+!+
+!
+!    COORDS
+!
+!    D.W.T.Baines/ROE/April 1983
+!
+!-
+COORDS/FRAME(W)/     ! STARLINK BDF to contain the list of coordinates
+REPLY/VALUE/         ! General reply variable used by lower level routines

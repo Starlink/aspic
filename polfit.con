@@ -1,0 +1,14 @@
+!	POLFIT		D. TUDHOPE/ROE/NOV 1982
+!	part of CALIBRATION suite
+LEVELS/FRAME(R)/		! (RA) calibration levels
+LOOKUP/FRAME(W)/	        ! (RA) intensity lookup table
+TABS/VALUE/			! (R) minimum observed value
+TABF/VALUE/			! (R) maximum observed value
+NTAB/VALUE/1024			! (I) length of lookup table
+ORDER/VALUE/			! (I) order of poly. - interactive
+TERMINAL/VALUE/			! (I) terminal type
+REPLY/VALUE/			! (CH) yes,no
+BADLEV/ERROR/ERROR - an observed VALUE in LEVELS table outside TABS..TABF range
+TOOFEW/ERROR/POLFIT needs at least 3 pairs in LEVELS table
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT

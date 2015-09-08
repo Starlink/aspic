@@ -1,0 +1,75 @@
+!   Connection file for program MATCHBACK
+!
+IM1/FRAME(R)/	! First input/output image
+IM2/FRAME(R)/	! Second  input/output image
+IM3/FRAME(R)/	! ... etc
+IM4/FRAME(R)/
+IM5/FRAME(R)/
+IM6/FRAME(R)/
+IM7/FRAME(R)/
+IM8/FRAME(R)/
+IM9/FRAME(R)/
+IM10/FRAME(R)/
+IM11/FRAME(R)/
+IM12/FRAME(R)/
+IM13/FRAME(R)/
+IM14/FRAME(R)/
+IM15/FRAME(R)/
+IM16/FRAME(R)/
+IM17/FRAME(R)/
+IM18/FRAME(R)/
+IM19/FRAME(R)/
+IM20/FRAME(R)/
+OFF1/VALUE/		! Offset subtracted from IM1 (output parameter)
+OFF2/VALUE/		! Offset subtracted from IM2 (output parameter)
+OFF3/VALUE/		! ... etc
+OFF4/VALUE/
+OFF5/VALUE/
+OFF6/VALUE/
+OFF7/VALUE/
+OFF8/VALUE/
+OFF9/VALUE/
+OFF10/VALUE/
+OFF11/VALUE/
+OFF12/VALUE/
+OFF13/VALUE/
+OFF14/VALUE/
+OFF15/VALUE/
+OFF16/VALUE/
+OFF17/VALUE/
+OFF18/VALUE/
+OFF19/VALUE/
+OFF20/VALUE/
+!
+!   Error parameters specific to MATCHBACK
+!
+BADPLY/ERROR/*** Error in routine PLYSUM!!!/
+DIFFSIZ/ERROR/*** Pixels are not the same size as pixels in other scans/
+MAXINP/ERROR/*** Maximum allowable number of input images reached/
+NOOVER/ERROR/*** None of the scans overlap each other/
+OFFOUT/ERROR/*** Failed to write this offset to its output parameter/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+BADCMD/ERROR/*** Parameter not recognised/
+BADDESC/ERROR/*** Attempt to access an inproperly named descriptor/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+EQULIMS/ERROR/*** Equal limits are not allowed/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert imageformat/
+INVNAXIS/ERROR/*** Image has invalid FITS descriptors/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONEVAL/ERROR/*** Output would have no valid pixels/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTIM/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+TOOBAD/ERROR/*** Too many bad values given/
+ZEROSCA/ERROR/*** Descriptor BSCALE is zero/

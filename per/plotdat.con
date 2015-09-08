@@ -1,0 +1,11 @@
+INPUT/FRAME(R)/
+XLIMITS/VALUE/
+YLIMITS/VALUE/
+POINTS/VALUE/
+INPUT2/FRAME(R)/
+DEVICE/VALUE/
+SIZE/VALUE/
+TITLE/VALUE/
+BADDATA/ERROR/*** Failed to obtain dataset ***/
+HELLDEV/ERROR/*** Failed to make sense of plotting device ***/
+ERRDYN/ERROR/*** Failed whilst obtaining workspace ***/

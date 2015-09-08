@@ -1,0 +1,13 @@
+INPUT/FRAME(R)/
+OUTPUT/FRAME(W)/
+MAXNUM/VALUE/
+TITLE/VALUE/
+DEVICE/VALUE/
+SIZE/VALUE/
+START/VALUE/
+STEP/VALUE/
+NSPL/VALUE/
+HELLIN/ERROR/*** Data input has ended ***
+HELLWORK/ERROR/*** Failed while getting wortkspace ***/
+HELLOUT/ERROR/*** Failed to get an output dataset ***/
+HELLSPL/ERROR/*** Error whilst fitting splines ***/

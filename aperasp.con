@@ -1,0 +1,15 @@
+!+
+!   APERASP.
+!
+!   A C Davenhall./ROE/                    6/4/82.
+!   A C Davenhall./ROE/ {Modified}         13/3/84.
+!-
+INPIC1/FRAME(R)/     ! Input image.
+APERCOM/VALUE/       ! Photometry command.
+SIZE/VALUE/          ! Box size.
+ZEROPT/VALUE/        ! Zero point for photometry.
+FILENAME/VALUE/      ! Name of output file for results.
+IDENT/VALUE/         ! Identifier for measure written to file.
+XPOS/VALUE/
+YPOS/VALUE/
+REPLY/VALUE/

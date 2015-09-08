@@ -1,0 +1,8 @@
+!	SETALL		D. TUDHOPE/ROE/Sept 1982
+!	part of IAM suite
+SKY/VALUE/-99999.0       !   (R) sky background
+THRLD/VALUE/-99999.0     !   (R) threshold cut
+AREA/VALUE/10            !   (I) area cut
+SKYMAG/VALUE/0.0         !   (R) sky background in one pixel
+MISREAD/ERROR/ERROR IN READING FROM ENVIRONMENT
+MISWRITE/ERROR/ERROR IN WRITING TO ENVIRONMENT

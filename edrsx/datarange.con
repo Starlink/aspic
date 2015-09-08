@@ -1,0 +1,33 @@
+!   Connection file for program DATARANGE
+!
+INPUT/FRAME(R)/		! The input image
+HISTPC/VALUE//		! List of histogram percentage points
+DATVALS/VALUE/          ! Data values corresponding to histogram points
+MAX/VALUE/		! Max data value in input image
+MIN/VALUE/		! Min data value in input image
+RANGE/VALUE/		! Range of data values in input image
+ILEVEL/VALUE/2/		! Interaction level
+MEAN/VALUE/		! Mean data value in input
+DEVN/VALUE/		! Standard deviation of data values in input
+NVAL/VALUE/		! No. of valid pixels in input
+NINVAL/VALUE/		! No. of invalid pixels in input
+DATASUM/VALUE/		! Total valid data sum in image
+!
+!   Error parameters specific to DATARANGE
+!
+NONEVAL/ERROR/*** Input contains no valid data/
+TOOMANY/ERROR/*** Only 6 histogram data points written to the parameter DATVALS/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets....
+!
+BADVALUE/ERROR/*** Invalid numerical parameter/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+FMTFAIL/ERROR/*** Unsuccessful attempt to convert image format/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOTIMAGE/ERROR/*** Not an image/
+NOT2DIM/ERROR/*** Not a 2 dimensional image/
+NOVALID/ERROR/*** Input contains no valid data/
+TOOBAD/ERROR/*** Too many bad values given/

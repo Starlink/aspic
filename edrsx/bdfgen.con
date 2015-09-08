@@ -1,0 +1,40 @@
+!   Connection file for program BDFGEN
+!
+AUTO/VALUE//            ! If false then pixel co-ords read from file
+BDFTYPE/VALUE/		! BDF type; IMAGE or XYLIST
+DFIELD/VALUE//    	! Position of pixel data within record
+FILE/VALUE/      	! Name of text file containing input data
+IDSTART/VALUE/1/        ! Starting no. for xy list entry identifiers
+OUTPUT/FRAME(W)/    	! Name of output BDF image
+NLINEOUT/VALUE//	! No. of lines in output image
+NPIXOUT/VALUE//  	! No. of pixels per line in output image
+NREC/VALUE//	      	! No. of records to read from file
+TITLE/VALUE/     	! Title for output image
+TRCOEFFS/VALUE/  	! Transformation to apply to x and y data to get
+			! actual pixel co-ordinates
+XFIELD/VALUE//		! Position of X data within record
+YFIELD/VALUE//    	! Position of Y data within record
+ILEVEL/VALUE//
+!
+!   Error parameters specific to BDFGEN
+!
+NODATA/ERROR/*** Input file contains no suitable data/
+NOXYOUT/ERROR/*** Too few fields per record in text file to form XY list/
+!
+!   General error parameters for error conditions associated
+!   with acquiring parameter values and datasets, and doing
+!   other utility routines.
+!
+AMBIGCMD/ERROR/*** Ambiguous parameter abbreviation/
+BADCMD/ERROR/*** Parameter not recognised/
+BADNAME/ERROR/*** Attempt to access a non-existant parameter/
+BADVALUE/ERROR/*** Invalid numerical parameter/
+BADWORK/ERROR/*** Bad work space data type/
+DIMINVAL/ERROR/*** Data frame has invalid dimensions/
+DIMOOR/ERROR/*** Data frame dimensions out of range/
+FILQUOTA/ERROR/*** Open file quota exceeded/
+NOACCESS/ERROR/*** File cannot be accessed/
+NONULL/ERROR/*** Cannot continue with a null entry/
+NOSPACE/ERROR/*** Insufficient memory space available/
+NOTEXT/ERROR/*** Specified file is not a text file/
+TOOBAD/ERROR/*** Too many bad values given/

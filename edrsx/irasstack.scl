@@ -1,0 +1,112 @@
+!
+!****   Tell user what the procedure does
+!
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "    Aligns upto 20 images and stacks them into a"
+        WRITE SYS$OUTPUT "    single image"
+        WRITE SYS$OUTPUT "   ----------------------------------------------"
+        WRITE SYS$OUTPUT " "
+!
+!**** Get required parameter values from user
+!
+!       P1 = Output image name
+!	P2 = Title for output image
+!	P3 = DISK if disk space is to be saved, CPU if time is to be 
+!	     saved
+!       P4 to P9 = Images to align.
+!                  If P4 is null on entry then the images are prompted
+!                  for in a loop and upto 20 can then be given.
+!
+        IF P1.EQS."" THEN INQUIRE P1 "Name of combined output image?"
+        IF P1.EQS."" THEN EXIT
+        IF P2.EQS."" THEN INQUIRE P2 "Title for output image?"
+LBL01:
+	IF P3.EQS."CPU".OR.P3.EQS."DISK" THEN GOTO LBL0
+           INQUIRE P3 "Save disk space or CPU time? (Enter DISK or CPU)"
+           GOTO LBL01
+LBL0:
+        PROMPT="NO"
+        IF P4.EQS."" THEN PROMPT="YES"
+!
+!****   Set up some parameter values which don't change within the
+!       file aligning block
+!
+	CLEAR IRASBACK
+        CLEAR IMGSTACK
+        CLEAR IRASSHIFT
+        CLEAR IRASCOEF
+!
+        LET IRASCOEF_ILEVEL=1
+        LET IRASCOEF_ILEVEL=1
+        LET IRASSHIFT_TITLE=
+        LET IMGSTACK_METHOD=
+        LET IMGSTACK_TITLE='P2'
+!
+!****	Enter a loop to read in the input images and assign them
+!	to the input parameters of IRASBACK
+!
+        N=1
+LBL1:
+	IF PROMPT.EQS."YES" THEN INQUIRE IMAGE "Image no. ''N'"
+        IF PROMPT.EQS."NO" THEN IMAGE=P'F$STRING(N+3)'
+        IF IMAGE.EQS."" THEN GOTO LBL2
+        LET IRASBACK_IMAGE'N'='IMAGE'
+        N=N+1
+        IF PROMPT.EQS."YES".AND.N.LE.20 THEN GOTO LBL1
+	IF PROMPT.EQS."NO".AND.N.LE.6 THEN GOTO LBL1
+!
+!****   Produce an image which can act as a background to which the
+!	other images can be aligned so that none of them go off the
+!	bottom or left edges of the final combined image.
+!
+LBL2:
+	N=N-1
+      	IRASBACK OUTPUT=BACKGROUND
+!
+!****   Enter a loop to align each image with the reference image
+!       The aligned images are the original image names suffixed by R
+!
+        M=1
+      	LET IRASCOEF_IMAGEA=BACKGROUND
+      	IF F$SEARCH("TEMP.BDF").NES."" THEN DELETE TEMP.BDF;*
+LBL3:
+        IMAGE=F$TRNLNM("IRASBACK_IMAGE''M'")
+      	WRITE SYS$OUTPUT "  Aligning ",IMAGE
+        IRASCOEF IMAGEB='IMAGE'
+        IRASSHIFT INPUT='IMAGE' OUTPUT='IMAGE'R TRCOEFFS=IRASCOEF_TRCOEFFS
+!
+!****   Assign the current aligned image name to the next IMGSTACK input
+!       image. If the max no. of images has not been reached loop for
+!       another.
+!
+	IF P3.NES."CPU" THEN GOTO LBL4
+           LET IMGSTACK_IMAGE'M'='IMAGE'R
+           GOTO LBL5
+LBL4:  !ELSE
+           WRITE SYS$OUTPUT "  Stacking ",IMAGE
+           IF M.EQ.1 THEN COPY 'IMAGE'R.BDF TEMP.BDF
+           IF M.GT.1 THEN IMGSTACK IMAGE1='P1' IMAGE2='IMAGE'R TITLE='P2' OUTPUT=TEMP
+           IF F$SEARCH("''P1'.BDF;1").NES."" THEN DELETE 'P1'.BDF;1
+           RENAME TEMP.BDF 'P1'.BDF;1
+	   DELETE 'IMAGE'R.BDF;*
+LBL5:  !ENDIF
+
+      	M=M+1
+        IF M.LE.N THEN GOTO LBL3
+STACK:
+!
+!****   Now stack all the images together
+!
+        IF P3.EQS."CPU" THEN IMGSTACK OUTPUT='P1' METHOD=MODE TITLE=
+
+        WRITE SYS$OUTPUT " "
+        WRITE SYS$OUTPUT "    Finished !!! Combined image is ",P1,"."
+	IF P3.EQS."DISK" THEN GOTO LBL6
+        WRITE SYS$OUTPUT "    Original images suffixed by R contain the aligned"
+        WRITE SYS$OUTPUT "    input images."
+LBL6:
+        WRITE SYS$OUTPUT " "
+	CLEAR IRASBACK
+        CLEAR IMGSTACK
+        CLEAR IRASSHIFT
+        CLEAR IRASCOEF
